@@ -1,0 +1,262 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Styles personnalisés (optionnels) */
+@layer base {
+  body {
+    @apply bg-gray-100 text-gray-800 antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition;
+  }
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition;
+  }
+  .card {
+    @apply bg-white rounded-lg shadow p-6;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.print-document {
+  display: none;
+}
+
+@media print {
+  .no-print,
+  button,
+  aside,
+  header {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .shadow,
+  .shadow-sm {
+    box-shadow: none !important;
+  }
+
+  .print-document,
+  .print-document * {
+    visibility: visible !important;
+  }
+
+  .print-document {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    min-height: 100vh;
+    padding: 18mm 12mm 22mm;
+    color: #333;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .print-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 26mm;
+    align-items: start;
+    margin-bottom: 8mm;
+  }
+
+  .print-logo-text {
+    display: inline-block;
+    width: 39mm;
+    color: #24456f;
+    line-height: 1;
+  }
+
+  .print-logo-main {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3.5px;
+  }
+
+  .print-logo-rule {
+    display: block;
+    width: 18mm;
+    height: 1px;
+    margin: 1.8mm 0 1mm;
+    background: #24456f;
+  }
+
+  .print-logo-sub {
+    display: block;
+    margin-left: 15mm;
+    margin-top: -4.2mm;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    color: #3f4f63;
+  }
+
+  .print-logo-tagline {
+    display: block;
+    margin-top: 2.4mm;
+    font-size: 3.5px;
+    font-weight: 700;
+    letter-spacing: 0.9px;
+    color: #4d5968;
+  }
+
+  .print-document h1 {
+    margin: 7mm 0 5mm;
+    font-size: 15px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .print-meta {
+    width: 60mm;
+    border-collapse: collapse;
+  }
+
+  .print-meta th,
+  .print-meta td {
+    padding: 1.5mm 0;
+    border: 0;
+    text-align: left;
+    font-weight: 400;
+  }
+
+  .print-meta th {
+    width: 24mm;
+    color: #666;
+  }
+
+  .print-client {
+    margin-top: 28mm;
+    min-height: 24mm;
+    padding: 3mm;
+    border: 1px solid #ddd;
+  }
+
+  .print-client span,
+  .print-client strong {
+    display: block;
+  }
+
+  .print-items {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 10.5px;
+  }
+
+  .print-items th {
+    padding: 2mm;
+    background: #262626 !important;
+    color: white !important;
+    border: 0;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .print-items th:nth-child(1) {
+    width: 73%;
+  }
+
+  .print-items th:nth-child(n+2),
+  .print-items td:nth-child(n+2) {
+    text-align: right;
+  }
+
+  .print-items td {
+    min-height: 13mm;
+    padding: 2mm;
+    border: 0;
+    border-bottom: 1px solid #d4d4d4;
+    vertical-align: top;
+    white-space: pre-wrap;
+  }
+
+  .print-summary {
+    display: grid;
+    grid-template-columns: 1fr 75mm;
+    gap: 16mm;
+    margin-top: 9mm;
+    align-items: start;
+  }
+
+  .print-amount-words strong {
+    display: block;
+    margin-bottom: 2mm;
+    font-size: 10px;
+  }
+
+  .print-amount-words p {
+    margin: 0;
+  }
+
+  .print-totals {
+    width: 75mm;
+    border-collapse: collapse;
+  }
+
+  .print-totals td {
+    padding: 2mm;
+    border: 0;
+  }
+
+  .print-totals td:last-child {
+    text-align: right;
+  }
+
+  .print-totals tr:last-child td {
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    font-weight: 600;
+  }
+
+  .print-conditions,
+  .print-notes {
+    margin-top: 10mm;
+    width: 58%;
+    font-size: 10px;
+  }
+
+  .print-conditions strong,
+  .print-notes strong {
+    display: block;
+    margin-bottom: 6mm;
+  }
+
+  .print-conditions p,
+  .print-notes p {
+    margin: 0;
+  }
+
+  .print-footer {
+    position: fixed;
+    right: 12mm;
+    bottom: 9mm;
+    left: 12mm;
+    text-align: center;
+    font-size: 9px;
+    color: #555;
+  }
+}
