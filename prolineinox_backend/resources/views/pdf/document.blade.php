@@ -207,14 +207,12 @@
     <div class="footer">
           S.A.R.L A.U au capital de 100 000,00 Dhs 26 AVENUE MERS SULTANE TG1 APPT N°3<br />
 
-          Addresse: Rue 7 N 5 ETG 2 Appt N 4 SAADA SIDI BERNOUSSI CASABLANCA;
-          Email: contact@inoxproline.ma<br />
-          RC 370277 ***** TP : 31621181 ***** LF: 20745460 ***** ICE 001877012000072
-Casa Maroc
+         Addresse: Rue 7 N 5 ETG 2 Appt N 4 SAADA SIDI BERNOUSSI CASABLANCA;
+         Email: contact@inoxproline.ma<br />
 
-R.C.: 724691*****T.P: 34109698*****I.F.: 72053253*****
+         R.C.: 724691*****T.P: 34109698*****I.F.: 72053253*****
 
-ICE: 003890444000088
+         ICE: 003890444000088
     </div>
     <div class="page-number">1 / 1</div>
 </body>
