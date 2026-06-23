@@ -919,7 +919,10 @@ export default function DocumentEditor({ documentKind }) {
         </div>
 
         <div className="print-footer">
-          Adresse: Rue 7 N 5 ETG 2 Appt N 4 SAADA SIDI BERNOUSSI CASABLANCA; Email: contact@inoxproline.ma<br />
+          S.A.R.L A.U au capital de 100 000,00 Dhs 26 AVENUE MERS SULTANE TG1 APPT N°3
+
+          Addresse: Rue 7 N 5 ETG 2 Appt N 4 SAADA SIDI BERNOUSSI CASABLANCA;
+          Email: contact@inoxproline.ma<br />
           RC 370277 ***** TP : 31621181 ***** LF: 20745460 ***** ICE 001877012000072
         </div>
       </section>
