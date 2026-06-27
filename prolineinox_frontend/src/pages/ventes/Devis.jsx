@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
-  ArrowPathIcon,
   DocumentArrowDownIcon,
   PencilIcon,
   PlusIcon,
@@ -9,7 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import DataTable from '../../components/tables/DataTable';
-import { convertDocument, deleteDocument, getDocumentPDF, getDocuments } from '../../services/salesService';
+import { deleteDocument, getDocumentPDF, getDocuments } from '../../services/salesService';
 import { formatCurrency } from '../../utils/currency';
 import { downloadPDF } from '../../utils/pdfExport';
 
@@ -25,11 +24,9 @@ const statusLabels = {
 };
 
 export default function Devis() {
-  const navigate = useNavigate();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [convertingId, setConvertingId] = useState(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -63,23 +60,6 @@ export default function Devis() {
     }
   };
 
-  const handleConvertToOrder = async (document) => {
-    if (!document) return;
-    if (!confirm(`Convertir le devis ${document.reference} en bon de commande ?`)) return;
-
-    setConvertingId(document.id);
-    try {
-      const res = await convertDocument(document.id, 'order');
-      const order = res.data.data || res.data;
-      toast.success('Devis converti en bon de commande');
-      navigate(`/ventes/commandes/${order.id}`);
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Conversion impossible');
-    } finally {
-      setConvertingId(null);
-    }
-  };
-
   const columns = [
     { header: 'Reference', accessor: 'reference' },
     { header: 'Client', accessor: (row) => row.company?.name || '-' },
@@ -98,16 +78,6 @@ export default function Devis() {
             <PencilIcon className="h-4 w-4" />
             Modifier
           </Link>
-          <button
-            type="button"
-            onClick={() => handleConvertToOrder(row)}
-            disabled={convertingId === row.id}
-            className="inline-flex items-center gap-1 rounded-md border border-emerald-200 px-2 py-1 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
-            title="Convertir en bon de commande"
-          >
-            <ArrowPathIcon className="h-4 w-4" />
-            Convertir
-          </button>
           <button type="button" onClick={() => handlePDF(row.id)} className="text-indigo-600" title="Telecharger PDF">
             <DocumentArrowDownIcon className="h-5 w-5" />
           </button>
@@ -125,12 +95,6 @@ export default function Devis() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold text-slate-950">Devis</h2>
           <div className="flex flex-wrap gap-2">
-            <Link
-              to="/ventes/commandes"
-              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Bons de commande
-            </Link>
             <Link
               to="/ventes/devis/nouveau"
               className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"

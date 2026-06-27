@@ -1,9 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowPathIcon,
+  DocumentArrowDownIcon,
+  PlusIcon,
+  PrinterIcon,
+  TrashIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
-import { createDocument, updateDocument } from '../../services/salesService';
+import { convertDocument, createDocument, getDocumentPDF, updateDocument } from '../../services/salesService';
+import { downloadPDF } from '../../utils/pdfExport';
+import logoImage from '../../assets/images/Logo.jpeg';
 
 const documentConfig = {
   devis: { type: 'quote', label: 'Devis', back: '/ventes/devis' },
@@ -70,6 +79,8 @@ export default function DocumentEditor({ documentKind }) {
   const [saving, setSaving] = useState(false);
   const [showCompanyForm, setShowCompanyForm] = useState(false);
   const [savingCompany, setSavingCompany] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [companyForm, setCompanyForm] = useState(emptyCompany);
   const [items, setItems] = useState([emptyItem]);
   const [form, setForm] = useState({
@@ -123,9 +134,14 @@ export default function DocumentEditor({ documentKind }) {
     },
     logoBox: {
       display: 'inline-block',
-      width: '39mm',
+      width: '48mm',
       color: '#24456f',
       lineHeight: 1,
+    },
+    logoImage: {
+      display: 'block',
+      width: '48mm',
+      height: 'auto',
     },
     logoMain: {
       display: 'block',
@@ -415,6 +431,36 @@ export default function DocumentEditor({ documentKind }) {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (isNew || !config) return;
+
+    setDownloadingPdf(true);
+    try {
+      await downloadPDF(getDocumentPDF(id, config.type), `${config.label.toLowerCase().replaceAll(' ', '_')}_${id}.pdf`);
+    } catch (error) {
+      toast.error('Erreur telechargement PDF');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
+  const handleConvertToOrder = async () => {
+    if (isNew || config?.type !== 'quote') return;
+    if (!confirm(`Convertir le devis ${form.reference || id} en bon de commande ?`)) return;
+
+    setConverting(true);
+    try {
+      const res = await convertDocument(id, 'order');
+      const order = res.data.data || res.data;
+      toast.success('Devis converti en bon de commande');
+      navigate(`/ventes/commandes/${order.id}`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Conversion impossible');
+    } finally {
+      setConverting(false);
+    }
+  };
+
   if (!config) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -438,9 +484,43 @@ export default function DocumentEditor({ documentKind }) {
             <p className="text-sm font-medium uppercase tracking-wide text-cyan-700">Ventes</p>
             <h2 className="text-xl font-semibold text-slate-950">{title}</h2>
           </div>
-          <Link to={config.back} className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-            Retour
-          </Link>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {!isNew && config.type === 'quote' ? (
+              <button
+                type="button"
+                onClick={handleConvertToOrder}
+                disabled={converting}
+                className="inline-flex h-11 items-center gap-2 rounded-md bg-sky-600 px-5 text-sm font-semibold text-white shadow-sm shadow-sky-200 transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <ArrowPathIcon className="h-5 w-5" />
+                {converting ? 'Conversion...' : 'Convertir'}
+              </button>
+            ) : null}
+            {!isNew ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <PrinterIcon className="h-4 w-4" />
+                  Imprimer
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadPDF}
+                  disabled={downloadingPdf}
+                  className="inline-flex items-center gap-2 rounded-md bg-cyan-600 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-60"
+                >
+                  <DocumentArrowDownIcon className="h-4 w-4" />
+                  {downloadingPdf ? 'Telechargement...' : 'Telecharger PDF'}
+                </button>
+              </>
+            ) : null}
+            <Link to={config.back} className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+              Retour
+            </Link>
+          </div>
         </div>
 
         <div className="grid gap-5 p-5 md:grid-cols-2">
@@ -805,8 +885,7 @@ export default function DocumentEditor({ documentKind }) {
         <div className="print-header" style={printStyles.header}>
           <div>
             <div className="print-logo-text" style={printStyles.logoBox}>
-              <span className="print-logo-main" style={printStyles.logoMain}>INOXPROLINE</span>
-              <span className="print-logo-tagline" style={printStyles.logoTagline}>CONCEPTION • FABRICATION • INSTALLATION</span>
+              <img src={logoImage} alt="PRO LINE INOX" style={printStyles.logoImage} />
             </div>
             <h1 style={printStyles.title}>{config.label}</h1>
             <table className="print-meta" style={printStyles.metaTable}>
@@ -839,21 +918,22 @@ export default function DocumentEditor({ documentKind }) {
         <table className="print-items" style={printStyles.items}>
           <thead>
             <tr>
-              <th style={{ ...printStyles.itemHead, width: '73%' }}>Designation</th>
+              <th style={{ ...printStyles.itemHead, width: '16%' }}>Reference</th>
+              <th style={{ ...printStyles.itemHead, width: '57%' }}>Designation</th>
               <th style={{ ...printStyles.itemHead, textAlign: 'right' }}>Qte</th>
               <th style={{ ...printStyles.itemHead, textAlign: 'right' }}>PU HT</th>
               <th style={{ ...printStyles.itemHead, textAlign: 'right' }}>PT HT</th>
             </tr>
           </thead>
           <tbody>
-            {(printableItems.length ? printableItems : [{ description: '', details: '', quantity: '', unit_price: '' }]).map((item, index) => {
+            {(printableItems.length ? printableItems : [{ reference: '', description: '', details: '', quantity: '', unit_price: '' }]).map((item, index) => {
               const isSection = (item.line_type || 'article') === 'section';
 
               if (isSection) {
                 return (
                   <tr key={item.id || index}>
                     <td
-                      colSpan={4}
+                      colSpan={5}
                       style={{
                         ...printStyles.itemCell,
                         background: '#f1f5f9',
@@ -871,7 +951,8 @@ export default function DocumentEditor({ documentKind }) {
 
               return (
                 <tr key={item.id || index}>
-                  <td style={printStyles.itemCell}>
+                  <td style={{ ...printStyles.itemCell, textAlign: 'left' }}>{item.reference || ''}</td>
+                  <td style={{ ...printStyles.itemCell, textAlign: 'left' }}>
                     <strong>{item.description}</strong>
                     {item.details ? <div style={{ marginTop: '1mm' }}>{item.details}</div> : null}
                   </td>

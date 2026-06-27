@@ -10,6 +10,7 @@ import Dashboard from './pages/dashboard/Dashboard';
 import Comptes from './pages/Comptes';
 import Ventes from './pages/Ventes'; 
 import RoutePlaceholder from './pages/RoutePlaceholder';
+import Reglages from './pages/Reglages';
 
 // 2. ACHATS (Imports corrigés avec des noms uniques)
 import AvoirsAchats from './pages/achats/AvoirsAchats';
@@ -72,6 +73,7 @@ function AppRoutes() {
         <Route path="comptes" element={<Comptes />} />
         <Route path="contacts" element={<CRMContacts />} />
         <Route path="ventes" element={<Ventes />} />
+        <Route path="reglages" element={<Reglages />} />
 
         {/* --- ACHATS ROUTES --- */}
         <Route path="achats/demandes-prix" element={<DemandesPrix />} />

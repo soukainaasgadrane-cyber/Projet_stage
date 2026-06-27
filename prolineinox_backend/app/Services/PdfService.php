@@ -15,6 +15,7 @@ class PdfService
             'document' => $document,
             'company' => $document->company ?? null,
             'items' => $document->items ?? [],
+            'logo_path' => file_exists(public_path('logo.jpeg')) ? public_path('logo.jpeg') : null,
             'site_url' => config('app.url') ?? env('APP_URL'),
         ];
 

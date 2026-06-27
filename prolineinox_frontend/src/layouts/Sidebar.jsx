@@ -4,6 +4,7 @@ import {
   BuildingOfficeIcon,
   ChartBarIcon,
   ClipboardDocumentListIcon,
+  Cog6ToothIcon,
   CubeIcon,
   DocumentTextIcon,
   ShoppingCartIcon,
@@ -80,6 +81,7 @@ const navigation = [
       { nameKey: 'history', href: '/collaborateurs/historique' },
     ],
   },
+  { nameKey: 'settings', href: '/reglages', icon: Cog6ToothIcon },
 ];
 
 const linkBase = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition';

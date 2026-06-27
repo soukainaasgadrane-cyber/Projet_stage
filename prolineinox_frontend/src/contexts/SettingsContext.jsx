@@ -46,6 +46,7 @@ const translations = {
     collaborators: 'Collaborateurs',
     users: 'Utilisateurs',
     history: 'Historique',
+    settings: 'Reglages',
   },
   ar: {
     dashboard: 'لوحة التحكم',
@@ -90,6 +91,7 @@ const translations = {
     collaborators: 'الموظفون',
     users: 'المستخدمون',
     history: 'السجل',
+    settings: 'الإعدادات',
   },
   en: {
     dashboard: 'Dashboard',
@@ -134,6 +136,7 @@ const translations = {
     collaborators: 'Collaborators',
     users: 'Users',
     history: 'History',
+    settings: 'Settings',
   },
 };
 

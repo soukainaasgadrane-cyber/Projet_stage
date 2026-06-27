@@ -11,7 +11,8 @@
         th, td { border: 1px solid #999; padding: 6px; }
         th { background: #f2f2f2; font-weight: bold; text-align: center; }
         .top-table td { border: 0; padding: 0; vertical-align: top; }
-        .brand { text-align: left; margin-bottom: 18px; width: 145px; color: #24456f; line-height: 1; }
+        .brand { text-align: left; margin-bottom: 18px; width: 185px; color: #24456f; line-height: 1; }
+        .brand-logo { display: block; width: 185px; height: auto; margin-bottom: 8px; }
         .logo-main { display: block; font-size: 18px; font-weight: bold; letter-spacing: 5px; }
         .logo-rule { display: block; width: 72px; height: 1px; margin: 7px 0 4px; background: #24456f; }
         .logo-sub { display: block; margin-left: 58px; margin-top: -14px; font-size: 12px; font-weight: bold; letter-spacing: 8px; color: #3f4f63; }
@@ -87,10 +88,14 @@
         <tr>
             <td style="width:50%;">
                 <div class="brand">
-                    <span class="logo-main">INOX</span>
-                    <span class="logo-rule"></span>
-                    <span class="logo-sub">PRO LINE</span>
-                    <span class="logo-tagline">CONCEPTION • FABRICATION • INSTALLATION</span>
+                    @if(!empty($logo_path))
+                        <img class="brand-logo" src="{{ $logo_path }}" alt="PRO LINE INOX">
+                    @else
+                        <span class="logo-main">INOX</span>
+                        <span class="logo-rule"></span>
+                        <span class="logo-sub">PRO LINE</span>
+                        <span class="logo-tagline">CONCEPTION • FABRICATION • INSTALLATION</span>
+                    @endif
                 </div>
 
                 <div class="document-title">{{ $documentTitle }}</div>
@@ -134,7 +139,8 @@
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width:70%;">Designation</th>
+                <th style="width:14%;">Reference</th>
+                <th style="width:56%;">Designation</th>
                 <th class="num" style="width:8%;">Qte</th>
                 <th class="num" style="width:11%;">PU HT</th>
                 <th class="num" style="width:11%;">PT HT</th>
@@ -153,6 +159,7 @@
                     $lineHt = $quantity * $unitPrice;
                 @endphp
                 <tr>
+                    <td>{{ $item->reference ?? $item->article->code ?? '' }}</td>
                     <td>{{ $item->description ?? $item->name ?? '' }}</td>
                     <td class="num">{{ $item->quantity ?? $item->qty ?? '' }}</td>
                     <td class="num">{{ number_format((float) ($item->unit_price ?? $item->price ?? 0), 2) }}</td>
@@ -160,11 +167,12 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" style="height:34px; text-align:center; color:#777;">Aucun article</td>
+                    <td colspan="5" style="height:34px; text-align:center; color:#777;">Aucun article</td>
                 </tr>
             @endforelse
             @for($i = 0; $i < $emptyRows; $i++)
                 <tr class="empty-line">
+                    <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
