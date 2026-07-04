@@ -22,11 +22,14 @@ const optionGroups = [
       { key: 'papierEntete', label: 'Papier en-tete', enabled: true },
       { key: 'contact', label: 'Contact', enabled: false },
       { key: 'composants', label: 'Composants', enabled: false },
+      { key: 'lesMontants', label: 'Les montants', enabled: true },
+      { key: 'transactions', label: 'Transactions', enabled: true },
       { key: 'taxes', label: 'Taxes', enabled: true },
       { key: 'champsPersonnalises', label: 'Champs personnalises', enabled: false },
       { key: 'cachet', label: 'Cachet', enabled: false },
       { key: 'articlesOptionnels', label: 'Articles optionnels', enabled: false },
       { key: 'dateEcheance', label: 'Date echeance', enabled: true },
+      { key: 'dateLivraison', label: 'Date de livraison', enabled: false },
       { key: 'calculMarges', label: 'Calcul de marges', enabled: false },
     ],
   },
@@ -48,12 +51,21 @@ const optionGroups = [
 ];
 
 const columnOptions = [
-  { key: 'reference', label: 'Reference', enabled: true },
+  { key: 'reference', label: 'Reference', enabled: false },
+  { key: 'codeBarres', label: 'Code a barres', enabled: false },
+  { key: 'hsCode', label: 'HS Code', enabled: false },
+  { key: 'image', label: 'Image', enabled: false },
   { key: 'designation', label: 'Designation', enabled: true },
+  { key: 'description', label: 'Description', enabled: true },
+  { key: 'marque', label: 'Marque', enabled: false },
   { key: 'quantite', label: 'Quantite', enabled: true },
-  { key: 'prix', label: 'Prix unitaire', enabled: true },
-  { key: 'remise', label: 'Remise', enabled: false },
-  { key: 'total', label: 'Total HT', enabled: true },
+  { key: 'unite', label: 'Unite', enabled: false },
+  { key: 'puHT', label: 'PU HT', enabled: true },
+  { key: 'puHTRemise', label: 'PU HT remise', enabled: false },
+  { key: 'puTTC', label: 'PU TTC', enabled: false },
+  { key: 'tva', label: 'TVA', enabled: true },
+  { key: 'ptHT', label: 'PT HT', enabled: true },
+  { key: 'ptTTC', label: 'PT TTC', enabled: false },
 ];
 
 const modelOptions = [
@@ -85,6 +97,7 @@ function Toggle({ checked, onChange }) {
       >
         {checked ? 'ON' : ''}
       </span>
+      {!checked ? <span className="absolute right-2 text-[10px] font-bold text-slate-500">OFF</span> : null}
     </button>
   );
 }
@@ -101,14 +114,61 @@ function OptionRow({ label, checked, onChange }) {
 function DocumentPreview({ options }) {
   const visibleColumns = useMemo(() => {
     const columns = [
-      options.reference ? 'Reference' : null,
-      options.designation ? 'Designation' : null,
-      options.quantite ? 'Qte' : null,
-      options.prix ? 'PU HT' : null,
-      options.total ? 'PT HT' : null,
+      options.reference ? { key: 'reference', label: 'Reference' } : null,
+      options.codeBarres ? { key: 'codeBarres', label: 'Code a barres' } : null,
+      options.hsCode ? { key: 'hsCode', label: 'HS Code' } : null,
+      options.image ? { key: 'image', label: 'Image' } : null,
+      options.designation ? { key: 'designation', label: 'Designation' } : null,
+      options.description ? { key: 'description', label: 'Description' } : null,
+      options.marque ? { key: 'marque', label: 'Marque' } : null,
+      options.quantite ? { key: 'quantite', label: 'Qte' } : null,
+      options.unite ? { key: 'unite', label: 'Unite' } : null,
+      options.puHT ? { key: 'puHT', label: 'PU HT' } : null,
+      options.puHTRemise ? { key: 'puHTRemise', label: 'PU HT remise' } : null,
+      options.puTTC ? { key: 'puTTC', label: 'PU TTC' } : null,
+      options.tva ? { key: 'tva', label: 'TVA' } : null,
+      options.ptHT ? { key: 'ptHT', label: 'PT HT' } : null,
+      options.ptTTC ? { key: 'ptTTC', label: 'PT TTC' } : null,
     ];
     return columns.filter(Boolean);
   }, [options]);
+
+  const sampleRows = [
+    {
+      reference: 'ART-001',
+      codeBarres: '611204780012',
+      hsCode: '7324.10',
+      image: 'Image',
+      designation: 'Siphon de sol Dim.250x250',
+      description: 'Inox 304, evacuation centrale',
+      marque: 'PROLINE',
+      quantite: '1',
+      unite: 'u',
+      puHT: '2 500,00',
+      puHTRemise: '2 350,00',
+      puTTC: '3 000,00',
+      tva: '20%',
+      ptHT: '2 500,00',
+      ptTTC: '3 000,00',
+    },
+    {
+      reference: 'ART-002',
+      codeBarres: '611204780029',
+      hsCode: '8414.60',
+      image: 'Image',
+      designation: 'Hotte cent. speciale cuisine',
+      description: 'Avec filtres et support',
+      marque: 'INOX',
+      quantite: '2',
+      unite: 'u',
+      puHT: '1 800,00',
+      puHTRemise: '1 800,00',
+      puTTC: '2 160,00',
+      tva: '20%',
+      ptHT: '3 600,00',
+      ptTTC: '4 320,00',
+    },
+  ];
 
   return (
     <div className="h-full min-h-[650px] overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
@@ -133,6 +193,7 @@ function DocumentPreview({ options }) {
             <div className="mb-8 text-sm leading-7 text-slate-700">
               <p>Date : 18/06/2026</p>
               {options.dateEcheance ? <p>Validite : 18/07/2026</p> : null}
+              {options.dateLivraison ? <p>Date de livraison : 22/06/2026</p> : null}
               {options.contact ? <p>Contact : Jalal Zakaria</p> : null}
               <p>Responsable : Jalal Zakaria</p>
               <p>Objet : GROUPE MACHAA ALLAH</p>
@@ -151,29 +212,62 @@ function DocumentPreview({ options }) {
           <thead>
             <tr>
               {visibleColumns.map((column) => (
-                <th key={column} className="border border-cyan-700 bg-cyan-600 px-3 py-3 text-left font-semibold text-white">
-                  {column}
+                <th key={column.key} className="border border-cyan-700 bg-cyan-600 px-3 py-3 text-left font-semibold text-white">
+                  {column.label}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {['Siphon de sol Dim.250x250', 'Hotte cent. speciale cuisine toutes comprises', 'Structure inox sur mesure'].map((item, index) => (
-              <tr key={item} className={index % 2 ? 'bg-slate-50' : 'bg-white'}>
-                {options.reference ? <td className="border border-slate-200 px-3 py-4 text-slate-600">ART-00{index + 1}</td> : null}
-                {options.designation ? <td className="border border-slate-200 px-3 py-4 font-medium text-slate-800">{item}</td> : null}
-                {options.quantite ? <td className="border border-slate-200 px-3 py-4 text-right text-slate-600">{index + 1}</td> : null}
-                {options.prix ? <td className="border border-slate-200 px-3 py-4 text-right text-slate-600">2 500,00</td> : null}
-                {options.total ? <td className="border border-slate-200 px-3 py-4 text-right font-semibold text-slate-900">{((index + 1) * 2500).toLocaleString('fr-FR')},00</td> : null}
+            {sampleRows.map((item, index) => (
+              <tr key={item.reference} className={index % 2 ? 'bg-slate-50' : 'bg-white'}>
+                {visibleColumns.map((column) => (
+                  <td
+                    key={column.key}
+                    className={`border border-slate-200 px-3 py-4 text-slate-600 ${
+                      ['quantite', 'puHT', 'puHTRemise', 'puTTC', 'tva', 'ptHT', 'ptTTC'].includes(column.key)
+                        ? 'text-right'
+                        : 'text-left'
+                    } ${column.key === 'designation' ? 'font-medium text-slate-800' : ''}`}
+                  >
+                    {item[column.key]}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
         </table>
 
+        {options.lesMontants ? (
+          <div className="mt-8 ml-auto w-72 text-sm text-slate-700">
+            <div className="flex justify-between border-b py-2">
+              <span>Total HT</span>
+              <span>6 100,00</span>
+            </div>
+            {options.taxes ? (
+              <div className="flex justify-between border-b py-2">
+                <span>TVA (20%)</span>
+                <span>1 220,00</span>
+              </div>
+            ) : null}
+            <div className="flex justify-between border-b border-slate-400 py-2 font-semibold">
+              <span>Montant NET TTC</span>
+              <span>7 320,00</span>
+            </div>
+          </div>
+        ) : null}
+
         {options.conditions ? (
           <div className="mt-10 text-sm text-slate-600">
             <p className="font-semibold uppercase text-slate-800">Conditions:</p>
             <p className="mt-2">50% d'avance et 50% a la livraison</p>
+          </div>
+        ) : null}
+
+        {options.transactions ? (
+          <div className="mt-8 text-sm text-slate-600">
+            <p className="font-semibold uppercase text-slate-800">Paiements recus:</p>
+            <p className="mt-2">2 340,00 MAD regle le 26/06/2026 par especes</p>
           </div>
         ) : null}
 
@@ -198,6 +292,16 @@ export default function Reglages() {
   const currentOptions = activeTab === 'Colonnes' ? [{ title: 'Colonnes du document', options: columnOptions }]
     : activeTab === 'Modeles' ? [{ title: 'Modeles et sections', options: modelOptions }]
       : optionGroups;
+
+  const activeOptionKeys = currentOptions.flatMap((group) => group.options.map((option) => option.key));
+  const allCurrentSelected = activeOptionKeys.every((key) => options[key]);
+
+  const toggleAllCurrent = () => {
+    setOptions((current) => {
+      const nextValue = !allCurrentSelected;
+      return activeOptionKeys.reduce((acc, key) => ({ ...acc, [key]: nextValue }), { ...current });
+    });
+  };
 
   return (
     <div className="space-y-5">
@@ -259,6 +363,14 @@ export default function Reglages() {
             ) : null}
 
             <div className="space-y-7">
+              {activeTab === 'Colonnes' ? (
+                <section>
+                  <div className="rounded-md border border-slate-100 px-3">
+                    <OptionRow label="TOUT SELECTIONNER" checked={allCurrentSelected} onChange={toggleAllCurrent} />
+                  </div>
+                </section>
+              ) : null}
+
               {currentOptions.map((group) => (
                 <section key={group.title}>
                   <div className="mb-2 flex items-center gap-2">

@@ -61,6 +61,7 @@ class DocumentController extends Controller
             'company_id' => $request->company_id,
             'contact_id' => $request->contact_id,
             'responsible_name' => $request->responsible_name,
+            'subject' => $request->subject,
             'document_date' => $request->document_date,
             'due_date' => $request->due_date,
             'notes' => $request->notes,
@@ -87,6 +88,13 @@ class DocumentController extends Controller
     {
         $document->load(['company', 'contact', 'items.article', 'creator']);
         return new DocumentResource($document);
+    }
+
+    public function nextReference(string $type)
+    {
+        return response()->json([
+            'reference' => $this->generateReference($type),
+        ]);
     }
 // Créer un avoir (credit_note) à partir d'une facture
 public function createCreditNote(Document $invoice)
@@ -185,7 +193,7 @@ public static function generateRecurringInvoices()
     public function update(DocumentRequest $request, Document $document)
     {
         $data = $request->only([
-            'reference', 'client_reference', 'company_id', 'contact_id', 'responsible_name', 'status',
+            'reference', 'client_reference', 'company_id', 'contact_id', 'responsible_name', 'subject', 'status',
             'document_date', 'due_date', 'delivery_status', 'payment_status', 'advance_amount', 'notes'
         ]);
 
@@ -270,7 +278,7 @@ public static function generateRecurringInvoices()
     }
 
     // ================== CONVERSION DE DOCUMENT ==================
-    public function convert(Document $document, $targetType)
+    public function convert(Request $request, Document $document, $targetType)
     {
         $allowedConversions = [
             'quote' => ['proforma', 'order'],
@@ -286,6 +294,18 @@ public static function generateRecurringInvoices()
         if (!isset($allowedConversions[$document->type]) || !in_array($targetType, $allowedConversions[$document->type])) {
             return response()->json(['message' => 'Conversion not allowed'], 422);
         }
+
+        $validated = $request->validate([
+            'document_date' => 'nullable|date',
+            'due_date' => 'nullable|date',
+            'responsible_name' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
+        ]);
+
+        $documentDate = $validated['document_date'] ?? now()->toDateString();
+        $dueDate = array_key_exists('due_date', $validated)
+            ? $validated['due_date']
+            : ($targetType === 'invoice' ? now()->addDays(30)->toDateString() : null);
         
         $newDocument = Document::create([
             'reference' => $this->generateReference($targetType),
@@ -294,9 +314,10 @@ public static function generateRecurringInvoices()
             'contact_id' => $document->contact_id,
             'parent_document_id' => $document->id,
             'client_reference' => $document->client_reference,
-            'responsible_name' => $document->responsible_name,
-            'document_date' => now(),
-            'due_date' => $targetType === 'invoice' ? now()->addDays(30) : null,
+            'responsible_name' => $validated['responsible_name'] ?? $document->responsible_name,
+            'subject' => $validated['subject'] ?? $document->subject,
+            'document_date' => $documentDate,
+            'due_date' => $dueDate,
             'notes' => $document->notes,
             'subtotal' => $document->subtotal,
             'tax' => $document->tax,
@@ -433,6 +454,9 @@ public static function generateRecurringInvoices()
             'type' => $document->type,
             'company_id' => $document->company_id,
             'contact_id' => $document->contact_id,
+            'client_reference' => $document->client_reference,
+            'responsible_name' => $document->responsible_name,
+            'subject' => $document->subject,
             'document_date' => now(),
             'due_date' => $document->due_date,
             'notes' => $document->notes . ' (copie)',
@@ -468,18 +492,30 @@ public static function generateRecurringInvoices()
     private function generateReference($type)
     {
         $prefixes = [
-            'quote'           => 'DEV',
-            'proforma'        => 'PRO',
-            'order'           => 'CMD',
+            'quote'           => 'D',
+            'proforma'        => 'FP',
+            'order'           => 'C',
             'delivery_note'   => 'BL',
-            'invoice'         => 'FAC',
-            'credit_note'     => 'AVOIR',
-            'purchase_order'  => 'ACH-CMD',
-            'supplier_invoice' => 'ACH-FAC',
+            'invoice'         => 'F',
+            'credit_note'     => 'AV',
+            'purchase_request' => 'DA',
+            'purchase_order'  => 'BCA',
+            'receipt_note' => 'BR',
+            'supplier_invoice' => 'FA',
+            'supplier_credit_note' => 'AA',
         ];
         $prefix = $prefixes[$type] ?? 'DOC';
-        $count = Document::where('type', $type)->count() + 1;
-        return $prefix . str_pad($count, 6, '0', STR_PAD_LEFT);
+        $period = now()->format('Ym');
+        $count = Document::where('type', $type)
+            ->where('reference', 'like', "{$prefix}-{$period}-%")
+            ->count() + 1;
+
+        do {
+            $reference = "{$prefix}-{$period}-" . str_pad($count, 3, '0', STR_PAD_LEFT);
+            $count++;
+        } while (Document::where('reference', $reference)->exists());
+
+        return $reference;
     }
 
     private function recalculateDocumentTotals(Document $document)

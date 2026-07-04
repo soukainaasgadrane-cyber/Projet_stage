@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('devis/{devis}/pdf', [DevisController::class, 'generatePdf']);
     Route::apiResource('factures', FactureController::class);
     Route::apiResource('ventes', VenteController::class);
+    Route::get('documents/next-reference/{type}', [DocumentController::class, 'nextReference']);
     Route::apiResource('documents', DocumentController::class);
     Route::get('documents/{document}/pdf', [DocumentController::class, 'generatePdf']);
     Route::post('documents/{document}/items', [DocumentController::class, 'addItem']);

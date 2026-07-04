@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import api from '../../services/api';
-import DataTable from '../../components/tables/DataTable';
-import { PlusIcon, DocumentArrowDownIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { formatCurrency } from '../../utils/currency';
-import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { DocumentArrowDownIcon, EyeIcon, PlusIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
+import DataTable from '../../components/tables/DataTable';
+import { getDocumentPDF, getDocuments } from '../../services/salesService';
+import { formatCurrency } from '../../utils/currency';
+import { downloadPDF } from '../../utils/pdfExport';
 
 export default function AvoirsAchats() {
   const [items, setItems] = useState([]);
@@ -16,9 +17,10 @@ export default function AvoirsAchats() {
   }, [search]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const res = await api.get('/supplier-credit-notes', { params: { search } });
-      setItems(res.data.data);
+      const res = await getDocuments({ type: 'supplier_credit_note', search });
+      setItems(res.data.data || []);
     } catch (err) {
       toast.error('Erreur chargement');
     } finally {
@@ -26,33 +28,51 @@ export default function AvoirsAchats() {
     }
   };
 
+  const handlePDF = async (row) => {
+    try {
+      await downloadPDF(getDocumentPDF(row.id, row.type), `avoir_achat_${row.id}.pdf`);
+    } catch (err) {
+      toast.error('Erreur telechargement PDF');
+    }
+  };
+
   const columns = [
-    { header: 'Référence', accessor: 'reference' },
-    { header: 'Fournisseur', accessor: (row) => row.supplier?.name || '-' },
-    { header: 'Date', accessor: 'date' },
+    { header: 'Reference', accessor: 'reference' },
+    { header: 'Fournisseur', accessor: (row) => row.company?.name || '-' },
+    { header: 'Date', accessor: 'document_date' },
     { header: 'Total', accessor: (row) => formatCurrency(row.total) },
     { header: 'Statut', accessor: 'status' },
     {
       header: 'Actions',
       accessor: (row) => (
         <div className="flex gap-2">
-          <Link to={`/achats/avoirs-achats/${row.id}`} className="text-blue-600"><EyeIcon className="w-5 h-5" /></Link>
-          <button className="text-indigo-600"><DocumentArrowDownIcon className="w-5 h-5" /></button>
+          <Link to={`/achats/avoirs/${row.id}`} className="text-blue-600" title="Consulter">
+            <EyeIcon className="h-5 w-5" />
+          </Link>
+          <button type="button" onClick={() => handlePDF(row)} className="text-indigo-600" title="Telecharger PDF">
+            <DocumentArrowDownIcon className="h-5 w-5" />
+          </button>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="bg-white rounded shadow">
-      <div className="p-4 border-b flex justify-between">
+    <div className="rounded bg-white shadow">
+      <div className="flex justify-between border-b p-4">
         <h2 className="text-xl font-semibold">Avoirs d'achat</h2>
-        <Link to="/achats/avoirs-achats/nouveau" className="bg-indigo-600 text-white px-4 py-2 rounded flex items-center gap-2">
-          <PlusIcon className="w-5 h-5" /> Nouvel avoit
+        <Link to="/achats/avoirs/nouveau" className="flex items-center gap-2 rounded bg-indigo-600 px-4 py-2 text-white">
+          <PlusIcon className="h-5 w-5" /> Nouvel avoir
         </Link>
       </div>
       <div className="p-4">
-        <input type="text" placeholder="Rechercher..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full border rounded px-3 py-2 mb-4" />
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="mb-4 w-full rounded border px-3 py-2"
+        />
         <DataTable columns={columns} data={items} loading={loading} />
       </div>
     </div>

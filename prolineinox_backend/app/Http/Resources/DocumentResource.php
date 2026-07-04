@@ -20,6 +20,7 @@ class DocumentResource extends JsonResource
             'due_date' => $this->due_date,
             'validated_at' => $this->validated_at,
             'responsible_name' => $this->responsible_name,
+            'subject' => $this->subject,
             'subtotal' => $this->subtotal,
             'tax' => $this->tax,
             'discount' => $this->discount,

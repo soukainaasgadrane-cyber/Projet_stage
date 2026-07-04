@@ -21,20 +21,24 @@
         .meta-table { width: 270px; margin-bottom: 28px; font-size: 11px; }
         .meta-table th, .meta-table td { border: 0; padding: 4px 0; text-align: left; background: transparent; }
         .meta-table th { width: 92px; color: #666; font-weight: normal; }
+        .meta-table .linked-row th, .meta-table .linked-row td { padding-top: 8px; }
         .client-box { border: 1px solid #ddd; padding: 10px 12px; min-height: 82px; margin-top: 74px; font-size: 11px; }
         .muted { color: #666; font-size: 11px; line-height: 1.45; }
         .items-table { table-layout: fixed; font-size: 11px; margin-top: 2px; }
         .items-table th { border-color: #444; background: #2c2c2c; color: #fff; padding: 7px 8px; font-size: 10px; text-align: left; text-transform: uppercase; }
         .items-table th.num, .items-table td.num { text-align: right; }
-        .items-table td { border-left: 0; border-right: 0; border-top: 0; border-bottom: 1px solid #ccc; height: 48px; padding: 7px 8px; vertical-align: top; }
-        .items-table .empty-line td { height: 48px; color: transparent; }
+        .items-table td { border-left: 0; border-right: 0; border-top: 0; border-bottom: 1px solid #ccc; height: 28px; padding: 5px 8px; vertical-align: top; }
+        .items-table .empty-line td { height: 28px; color: transparent; }
         .amount-words { width: 48%; float: left; margin-top: 30px; line-height: 1.45; font-size: 10px; }
         .amount-words .title { font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
         .amount-table { width: 300px; float: right; margin-top: 12px; }
         .amount-table td { border: 0; background: transparent; padding: 7px 4px; font-weight: normal; }
         .amount-table .net td { border-top: 1px solid #aaa; border-bottom: 1px solid #aaa; font-weight: bold; }
         .conditions { clear: both; padding-top: 34px; width: 58%; font-size: 10px; line-height: 1.45; }
-        .conditions .title, .notes-box .title { font-weight: bold; text-transform: uppercase; margin-bottom: 14px; }
+        .conditions .title, .notes-box .title, .payments-box .title { font-weight: bold; text-transform: uppercase; margin-bottom: 14px; }
+        .payments-box { clear: both; padding-top: 28px; width: 70%; font-size: 10px; line-height: 1.45; }
+        .payments-box ul { margin: 0 0 0 18px; padding: 0; }
+        .payments-box li { margin-bottom: 6px; }
         .notes-box { width: 58%; margin-top: 28px; font-size: 10px; line-height: 1.45; }
         .footer { position: fixed; bottom: 22px; left: 0; right: 0; text-align: center; font-size: 10px; color: #555; line-height: 1.55; }
         .page-number { position: fixed; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 10px; color: #555; }
@@ -66,6 +70,26 @@
             $note = 'Nous vous remercions de votre confiance';
         }
         $isQuote = ($document->type ?? '') === 'quote';
+        $isInvoice = ($document->type ?? '') === 'invoice';
+        $sourceQuote = null;
+        $sourceOrder = null;
+        $sourcePurchaseOrder = null;
+        $ancestor = $document->parentDocument;
+        while ($ancestor) {
+            if ($ancestor->type === 'quote' && ! $sourceQuote) {
+                $sourceQuote = $ancestor;
+            }
+            if ($ancestor->type === 'order' && ! $sourceOrder) {
+                $sourceOrder = $ancestor;
+            }
+            if ($ancestor->type === 'purchase_order' && ! $sourcePurchaseOrder) {
+                $sourcePurchaseOrder = $ancestor;
+            }
+            $ancestor = $ancestor->parentDocument;
+        }
+        $payments = $isInvoice
+            ? $document->transactions->where('type', 'income')->sortBy('transaction_date')
+            : collect();
         $totalTtc = (float) ($document->total ?? 0);
         $amountWords = null;
         if (class_exists('\NumberFormatter')) {
@@ -118,6 +142,24 @@
                         <th>{{ $isQuote ? 'Validite' : 'Echeance' }}</th>
                         <td>{{ \Carbon\Carbon::parse($validUntil)->format('d/m/Y') }}</td>
                     </tr>
+                    @if($sourceQuote)
+                        <tr class="linked-row">
+                            <th>Devis</th>
+                            <td>{{ $sourceQuote->reference }}</td>
+                        </tr>
+                    @endif
+                    @if($sourceOrder)
+                        <tr>
+                            <th>Commande</th>
+                            <td>{{ $sourceOrder->reference }}</td>
+                        </tr>
+                    @endif
+                    @if($sourcePurchaseOrder)
+                        <tr>
+                            <th>Bon commande</th>
+                            <td>{{ $sourcePurchaseOrder->reference }}</td>
+                        </tr>
+                    @endif
                 </table>
             </td>
             <td style="width:50%;">
@@ -125,6 +167,9 @@
                     <strong>{{ $company->name ?? 'Client' }}</strong><br>
                     @if($document->responsible_name)
                         Responsable: {{ $document->responsible_name }}<br>
+                    @endif
+                    @if($document->subject)
+                        Projet: {{ $document->subject }}<br>
                     @endif
                     <span class="muted">
                         ICE: {{ $company->tax_number ?? '' }}<br>
@@ -139,8 +184,10 @@
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width:14%;">Reference</th>
-                <th style="width:56%;">Designation</th>
+                @if(! $isInvoice)
+                    <th style="width:14%;">Reference</th>
+                @endif
+                <th style="width:{{ $isInvoice ? '70%' : '56%' }};">Designation</th>
                 <th class="num" style="width:8%;">Qte</th>
                 <th class="num" style="width:11%;">PU HT</th>
                 <th class="num" style="width:11%;">PT HT</th>
@@ -159,7 +206,9 @@
                     $lineHt = $quantity * $unitPrice;
                 @endphp
                 <tr>
-                    <td>{{ $item->reference ?? $item->article->code ?? '' }}</td>
+                    @if(! $isInvoice)
+                        <td>{{ $item->reference ?? $item->article->code ?? '' }}</td>
+                    @endif
                     <td>{{ $item->description ?? $item->name ?? '' }}</td>
                     <td class="num">{{ $item->quantity ?? $item->qty ?? '' }}</td>
                     <td class="num">{{ number_format((float) ($item->unit_price ?? $item->price ?? 0), 2) }}</td>
@@ -167,12 +216,14 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" style="height:34px; text-align:center; color:#777;">Aucun article</td>
+                    <td colspan="{{ $isInvoice ? 4 : 5 }}" style="height:34px; text-align:center; color:#777;">Aucun article</td>
                 </tr>
             @endforelse
             @for($i = 0; $i < $emptyRows; $i++)
                 <tr class="empty-line">
-                    <td>&nbsp;</td>
+                    @if(! $isInvoice)
+                        <td>&nbsp;</td>
+                    @endif
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
@@ -201,6 +252,23 @@
             <td style="text-align:right">{{ number_format($document->total ?? 0, 2) }}</td>
         </tr>
     </table>
+
+    @if($isInvoice && $payments->count())
+        <div class="payments-box">
+            <div class="title">Paiements recus:</div>
+            <ul>
+                @foreach($payments as $payment)
+                    <li>
+                        {{ number_format((float) $payment->amount, 2, ',', ' ') }} MAD
+                        regle le {{ $payment->transaction_date ? \Carbon\Carbon::parse($payment->transaction_date)->format('d/m/Y') : '' }}
+                        @if($payment->payment_method)
+                            par {{ $payment->payment_method }}
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <div class="conditions">
         <div class="title">Conditions:</div>

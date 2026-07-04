@@ -9,7 +9,14 @@ class PdfService
 {
     public function generateSalePdf(Document $document)
     {
-        $document->loadMissing(['company', 'contact', 'items.article', 'creator']);
+        $document->loadMissing([
+            'company',
+            'contact',
+            'items.article',
+            'creator',
+            'transactions',
+            'parentDocument.parentDocument.parentDocument.parentDocument',
+        ]);
 
         $data = [
             'document' => $document,

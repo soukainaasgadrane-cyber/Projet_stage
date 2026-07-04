@@ -11,7 +11,7 @@ class Document extends Model
 
     protected $fillable = [
         'reference', 'client_reference', 'type', 'company_id', 'contact_id', 'parent_document_id',
-        'responsible_name', 'document_date', 'due_date', 'validated_at', 'subtotal', 'tax', 'discount', 'total',
+        'responsible_name', 'subject', 'document_date', 'due_date', 'validated_at', 'subtotal', 'tax', 'discount', 'total',
         'status', 'delivery_status', 'payment_status', 'advance_amount', 'notes', 'created_by'
     ];
 
