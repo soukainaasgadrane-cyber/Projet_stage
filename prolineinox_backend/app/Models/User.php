@@ -21,7 +21,13 @@ class User extends Authenticatable
         'password',
         'phone',
         'role',
-        'is_active'
+        'is_active',
+        'last_login_at',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
 
     protected $hidden = [

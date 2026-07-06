@@ -26,7 +26,7 @@ class DocumentRequest extends FormRequest
             'document_date' => 'required|date',
             'due_date' => 'nullable|date|after_or_equal:document_date',
             'delivery_status' => 'nullable|in:pending,in_progress,delivered,partial',
-            'payment_status' => 'nullable|in:unpaid,advance,paid',
+            'payment_status' => 'nullable|in:unpaid,advance,partial,paid',
             'advance_amount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
             'status' => 'nullable|in:brouillon,validee,acceptee,partielle,livree,expiree,facturee,annulee',

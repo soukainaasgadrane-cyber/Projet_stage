@@ -7,12 +7,14 @@ import {
   Cog6ToothIcon,
   CubeIcon,
   DocumentTextIcon,
+  HomeIcon,
   ShoppingCartIcon,
   TruckIcon,
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useSettings } from '../contexts/SettingsContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const navigation = [
   { nameKey: 'dashboard', href: '/', icon: ChartBarIcon },
@@ -84,11 +86,31 @@ const navigation = [
   { nameKey: 'settings', href: '/reglages', icon: Cog6ToothIcon },
 ];
 
+const adminNavigation = [
+  { name: 'Dashboard', href: '/', icon: HomeIcon },
+  {
+    name: 'Commercials',
+    icon: UserGroupIcon,
+    children: [
+      { name: 'Liste', href: '/admin/commercials' },
+    ],
+  },
+  { name: 'Clients', href: '/admin/clients', icon: BuildingOfficeIcon },
+  { name: 'Devis', href: '/admin/devis', icon: DocumentTextIcon },
+  { name: 'Commandes', href: '/admin/commandes', icon: ShoppingCartIcon },
+  { name: 'Historique', href: '/admin/historique', icon: ClipboardDocumentListIcon },
+  { name: 'Rapports', href: '/admin/rapports', icon: ChartBarIcon },
+  { name: 'Profil', href: '/admin/profil', icon: Cog6ToothIcon },
+];
+
 const linkBase = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition';
 const childBase = 'block rounded-md px-3 py-2 text-sm transition';
 
 export default function Sidebar({ open = false, onClose = () => {} }) {
   const { t } = useSettings();
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'admin' || user?.roles?.some?.((role) => role.name === 'admin');
+  const items = isAdmin ? adminNavigation : navigation;
   const label = (item) => item.name || t[item.nameKey] || item.nameKey;
 
   return (
@@ -126,7 +148,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
         </div>
 
         <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
-          {navigation.map((section) => (
+          {items.map((section) => (
             <div key={section.nameKey || section.name}>
               {section.href ? (
                 <NavLink
@@ -171,14 +193,26 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
         </nav>
 
         <div className="border-t border-slate-800 px-5 py-4 text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <ClipboardDocumentListIcon className="h-4 w-4" />
-            Gestion commerciale
-          </div>
-          <div className="mt-2 flex items-center gap-2">
-            <DocumentTextIcon className="h-4 w-4" />
-            Finance, stock et documents
-          </div>
+          {isAdmin ? (
+            <button
+              type="button"
+              onClick={logout}
+              className="w-full rounded-md border border-slate-800 px-3 py-2 text-left text-sm font-medium text-slate-200 hover:bg-slate-900"
+            >
+              Deconnexion
+            </button>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <ClipboardDocumentListIcon className="h-4 w-4" />
+                Gestion commerciale
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <DocumentTextIcon className="h-4 w-4" />
+                Finance, stock et documents
+              </div>
+            </>
+          )}
         </div>
       </aside>
     </>

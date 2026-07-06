@@ -762,7 +762,9 @@ export default function DocumentEditor({ documentKind }) {
               onChange={handleChange}
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 focus:border-cyan-600 focus:outline-none"
             >
-              <option value="advance">Avance</option>
+              <option value="unpaid">Non paye</option>
+              <option value="advance">Avance payee</option>
+              <option value="partial">Partiellement paye</option>
               <option value="paid">Paye</option>
             </select>
           </label>

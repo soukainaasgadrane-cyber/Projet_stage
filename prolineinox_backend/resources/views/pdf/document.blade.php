@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Document {{ $document->reference ?? $document->id }}</title>
     <style>
-        @page { margin: 28px 28px 78px 28px; }
+        @page { margin: 28px 28px 118px 28px; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #333; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #999; padding: 6px; }
@@ -28,7 +28,6 @@
         .items-table th { border-color: #444; background: #2c2c2c; color: #fff; padding: 7px 8px; font-size: 10px; text-align: left; text-transform: uppercase; }
         .items-table th.num, .items-table td.num { text-align: right; }
         .items-table td { border-left: 0; border-right: 0; border-top: 0; border-bottom: 1px solid #ccc; height: 28px; padding: 5px 8px; vertical-align: top; }
-        .items-table .empty-line td { height: 28px; color: transparent; }
         .amount-words { width: 48%; float: left; margin-top: 30px; line-height: 1.45; font-size: 10px; }
         .amount-words .title { font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
         .amount-table { width: 300px; float: right; margin-top: 12px; }
@@ -39,8 +38,9 @@
         .payments-box { clear: both; padding-top: 28px; width: 70%; font-size: 10px; line-height: 1.45; }
         .payments-box ul { margin: 0 0 0 18px; padding: 0; }
         .payments-box li { margin-bottom: 6px; }
-        .notes-box { width: 58%; margin-top: 28px; font-size: 10px; line-height: 1.45; }
-        .footer { position: fixed; bottom: 22px; left: 0; right: 0; text-align: center; font-size: 10px; color: #555; line-height: 1.55; }
+        .notes-box { width: 58%; margin-top: 28px; margin-bottom: 54px; font-size: 10px; line-height: 1.45; }
+        .footer-spacer { clear: both; height: 62px; }
+        .footer { position: fixed; bottom: 24px; left: 0; right: 0; text-align: center; font-size: 9px; color: #555; line-height: 1.35; }
         .page-number { position: fixed; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 10px; color: #555; }
     </style>
 </head>
@@ -105,6 +105,61 @@
             } catch (\Throwable $e) {
                 $amountWords = null;
             }
+        }
+        if (! $amountWords) {
+            $units = [
+                0 => 'zero', 1 => 'un', 2 => 'deux', 3 => 'trois', 4 => 'quatre',
+                5 => 'cinq', 6 => 'six', 7 => 'sept', 8 => 'huit', 9 => 'neuf',
+                10 => 'dix', 11 => 'onze', 12 => 'douze', 13 => 'treize', 14 => 'quatorze',
+                15 => 'quinze', 16 => 'seize',
+            ];
+            $tens = [
+                20 => 'vingt', 30 => 'trente', 40 => 'quarante', 50 => 'cinquante',
+                60 => 'soixante', 80 => 'quatre-vingt',
+            ];
+            $numberToFrench = function (int $number) use (&$numberToFrench, $units, $tens): string {
+                if ($number < 17) {
+                    return $units[$number];
+                }
+                if ($number < 20) {
+                    return 'dix-' . $units[$number - 10];
+                }
+                if ($number < 70) {
+                    $ten = intdiv($number, 10) * 10;
+                    $rest = $number % 10;
+                    return $tens[$ten] . ($rest ? ($rest === 1 ? ' et un' : '-' . $units[$rest]) : '');
+                }
+                if ($number < 80) {
+                    return 'soixante-' . $numberToFrench($number - 60);
+                }
+                if ($number < 100) {
+                    $rest = $number - 80;
+                    return 'quatre-vingt' . ($rest ? '-' . $numberToFrench($rest) : 's');
+                }
+                if ($number < 1000) {
+                    $hundred = intdiv($number, 100);
+                    $rest = $number % 100;
+                    $prefix = $hundred === 1 ? 'cent' : $units[$hundred] . ' cent';
+                    return $prefix . ($rest ? ' ' . $numberToFrench($rest) : ($hundred > 1 ? 's' : ''));
+                }
+                if ($number < 1000000) {
+                    $thousand = intdiv($number, 1000);
+                    $rest = $number % 1000;
+                    $prefix = $thousand === 1 ? 'mille' : $numberToFrench($thousand) . ' mille';
+                    return $prefix . ($rest ? ' ' . $numberToFrench($rest) : '');
+                }
+                $million = intdiv($number, 1000000);
+                $rest = $number % 1000000;
+                $prefix = $numberToFrench($million) . ' million' . ($million > 1 ? 's' : '');
+                return $prefix . ($rest ? ' ' . $numberToFrench($rest) : '');
+            };
+            $dirhams = (int) floor($totalTtc);
+            $centimes = (int) round(($totalTtc - $dirhams) * 100);
+            $amountWords = ucfirst($numberToFrench($dirhams)) . ' dirham' . ($dirhams > 1 ? 's' : '');
+            if ($centimes > 0) {
+                $amountWords .= ' et ' . $numberToFrench($centimes) . ' centime' . ($centimes > 1 ? 's' : '');
+            }
+            $amountWords .= ' toutes taxes comprises';
         }
     @endphp
 
@@ -194,11 +249,6 @@
             </tr>
         </thead>
         <tbody>
-            @php
-                $itemsCount = count($items);
-                $minimumRows = 12;
-                $emptyRows = max(0, $minimumRows - $itemsCount);
-            @endphp
             @forelse($items as $item)
                 @php
                     $quantity = (float) ($item->quantity ?? 0);
@@ -209,7 +259,12 @@
                     @if(! $isInvoice)
                         <td>{{ $item->reference ?? $item->article->code ?? '' }}</td>
                     @endif
-                    <td>{{ $item->description ?? $item->name ?? '' }}</td>
+                    <td>
+                        <strong>{{ $item->description ?? $item->name ?? '' }}</strong>
+                        @if(!empty($item->details))
+                            <br><span class="muted">{!! nl2br(e($item->details)) !!}</span>
+                        @endif
+                    </td>
                     <td class="num">{{ $item->quantity ?? $item->qty ?? '' }}</td>
                     <td class="num">{{ number_format((float) ($item->unit_price ?? $item->price ?? 0), 2) }}</td>
                     <td class="num">{{ number_format($lineHt, 2) }}</td>
@@ -219,17 +274,6 @@
                     <td colspan="{{ $isInvoice ? 4 : 5 }}" style="height:34px; text-align:center; color:#777;">Aucun article</td>
                 </tr>
             @endforelse
-            @for($i = 0; $i < $emptyRows; $i++)
-                <tr class="empty-line">
-                    @if(! $isInvoice)
-                        <td>&nbsp;</td>
-                    @endif
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-            @endfor
         </tbody>
     </table>
 
@@ -279,6 +323,8 @@
         <div class="title">Notes:</div>
         <div>{!! nl2br(e($note)) !!}</div>
     </div>
+
+    <div class="footer-spacer"></div>
 
     <div class="footer">
           S.A.R.L A.U au capital de 100 000,00 Dhs 26 AVENUE MERS SULTANE TG1 APPT N°3<br />

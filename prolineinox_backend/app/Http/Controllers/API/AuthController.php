@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Models\ActivityLog;
 
 class AuthController extends Controller
 {
@@ -29,15 +30,26 @@ class AuthController extends Controller
 
         if (!$user->is_active) {
             return response()->json([
-                'message' => 'Compte desactive',
+                'message' => "Votre compte a ete bloque par l'administrateur.",
             ], 403);
         }
 
         $expiresAt = now()->addMinutes((int) config('sanctum.expiration', 480));
+        $user->last_login_at = now();
+        $user->saveQuietly();
 
         // Keep one active API token per user to reduce forgotten sessions.
         $user->tokens()->where('name', 'erp-api')->delete();
         $token = $user->createToken('erp-api', ['*'], $expiresAt)->plainTextToken;
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'action' => 'login',
+            'model_type' => User::class,
+            'model_id' => $user->id,
+            'old_values' => null,
+            'new_values' => null,
+            'ip_address' => $request->ip(),
+        ]);
 
         return response()->json([
             'message' => 'Connexion reussie',
@@ -54,6 +66,16 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'logout',
+            'model_type' => User::class,
+            'model_id' => $request->user()->id,
+            'old_values' => null,
+            'new_values' => null,
+            'ip_address' => $request->ip(),
+        ]);
+
         $request->user()->currentAccessToken()?->delete();
 
         return response()->json([

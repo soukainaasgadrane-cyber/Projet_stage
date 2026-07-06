@@ -9,6 +9,10 @@ class ActivityLogObserver
 {
     protected function log($model, $action)
     {
+        if (! auth()->id()) {
+            return;
+        }
+
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => $action,

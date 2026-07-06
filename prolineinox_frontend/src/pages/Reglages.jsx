@@ -8,9 +8,11 @@ import {
   PhotoIcon,
   SwatchIcon,
 } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 import logoImage from '../assets/images/Logo.jpeg';
 
 const tabs = ['Options', 'Colonnes', 'Modeles'];
+const SETTINGS_STORAGE_KEY = 'prolineinox_document_settings';
 
 const optionGroups = [
   {
@@ -283,7 +285,15 @@ function DocumentPreview({ options }) {
 
 export default function Reglages() {
   const [activeTab, setActiveTab] = useState('Options');
-  const [options, setOptions] = useState(buildInitialOptions);
+  const [options, setOptions] = useState(() => {
+    const defaults = buildInitialOptions();
+    try {
+      const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+    } catch {
+      return defaults;
+    }
+  });
 
   const setOption = (key) => {
     setOptions((current) => ({ ...current, [key]: !current[key] }));
@@ -303,6 +313,11 @@ export default function Reglages() {
     });
   };
 
+  const handleSave = () => {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(options));
+    toast.success('Reglages enregistres');
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -312,6 +327,7 @@ export default function Reglages() {
         </div>
         <button
           type="button"
+          onClick={handleSave}
           className="inline-flex items-center gap-2 rounded-md bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700"
         >
           <CheckIcon className="h-4 w-4" />

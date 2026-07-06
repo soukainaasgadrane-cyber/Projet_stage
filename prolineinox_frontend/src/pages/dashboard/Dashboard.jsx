@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
 import StatsCards from './StatsCards';
 import Charts from './Charts';
+import { useAuth } from '../../contexts/AuthContext';
+import AdminDashboard from '../admin/AdminDashboard';
 
 const defaultDashboard = {
   chiffre_affaires: 248500,
@@ -27,11 +29,18 @@ const defaultDashboard = {
 };
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin' || user?.roles?.some?.((role) => role.name === 'admin');
   const [data, setData] = useState(defaultDashboard);
   const [loading, setLoading] = useState(true);
   const [apiReady, setApiReady] = useState(true);
 
   useEffect(() => {
+    if (isAdmin) {
+      setLoading(false);
+      return;
+    }
+
     api
       .get('/dashboard')
       .then((res) => {
@@ -43,7 +52,7 @@ export default function Dashboard() {
         setApiReady(false);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [isAdmin]);
 
   const counters = useMemo(
     () => [
@@ -59,6 +68,10 @@ export default function Dashboard() {
 
   if (loading) {
     return <div className="rounded-lg border border-slate-200 bg-white p-6 text-slate-600">Chargement...</div>;
+  }
+
+  if (isAdmin) {
+    return <AdminDashboard />;
   }
 
   return (

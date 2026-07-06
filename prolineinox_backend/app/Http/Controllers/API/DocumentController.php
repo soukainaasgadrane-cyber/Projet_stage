@@ -8,6 +8,7 @@ use App\Http\Resources\DocumentResource;
 use App\Models\Document;
 use App\Models\DocumentItem;
 use App\Models\Article;
+use App\Models\ActivityLog;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +80,8 @@ class DocumentController extends Controller
         if ($request->has('items')) {
             $this->syncDocumentItems($document, $request->items ?? []);
         }
+
+        $this->logDocumentActivity($document, 'created_'.$document->type);
         
         return new DocumentResource($document->load(['company', 'contact', 'items.article', 'creator']));
     }
@@ -213,9 +216,8 @@ public static function generateRecurringInvoices()
     // ================== SUPPRESSION (si brouillon) ==================
     public function destroy(Document $document)
     {
-        if (!in_array($document->status, ['draft', 'brouillon'])) {
-            return response()->json(['message' => 'Cannot delete non-draft document'], 422);
-        }
+        Document::where('parent_document_id', $document->id)->update(['parent_document_id' => null]);
+        $document->recurringSetting()->delete();
         $document->items()->delete();
         $document->delete();
         return response()->json(['message' => 'Document deleted']);
@@ -348,6 +350,7 @@ public static function generateRecurringInvoices()
         }
         
         $document->update(['status' => 'validee', 'validated_at' => now()->toDateString()]);
+        $this->logDocumentActivity($newDocument, 'created_'.$newDocument->type);
         
         return new DocumentResource($newDocument);
     }
@@ -557,6 +560,23 @@ public static function generateRecurringInvoices()
                     $article->update(['stock_quantity' => max(0, $newStock)]);
                 }
             }
+        }
+    }
+
+    private function logDocumentActivity(Document $document, string $action): void
+    {
+        try {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => $action,
+                'model_type' => Document::class,
+                'model_id' => $document->id,
+                'old_values' => null,
+                'new_values' => ['reference' => $document->reference, 'type' => $document->type],
+                'ip_address' => request()->ip(),
+            ]);
+        } catch (\Throwable $e) {
+            // Activity history must never block document work.
         }
     }
 

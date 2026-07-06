@@ -24,7 +24,7 @@ class PurchaseDocumentRequest extends FormRequest
             'discount' => 'nullable|numeric',
             'total' => 'nullable|numeric',
             'delivery_status' => 'nullable|in:pending,in_progress,delivered,partial',
-            'payment_status' => 'nullable|in:unpaid,advance,paid',
+            'payment_status' => 'nullable|in:unpaid,advance,partial,paid',
             'advance_amount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ];

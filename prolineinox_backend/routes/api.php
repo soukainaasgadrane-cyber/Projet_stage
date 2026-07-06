@@ -17,6 +17,7 @@ use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\DocumentController;
 use App\Http\Controllers\API\ArticleController;
 use App\Http\Controllers\API\AuditController;
+use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\BankAccountController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\CatalogueReportController;
@@ -51,12 +52,27 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
-Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:api', 'admin.readonly'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // current user
     Route::get('/user', [AuthController::class, 'user']);
+
+    Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::get('dashboard', [AdminController::class, 'dashboard']);
+        Route::get('commercials', [AdminController::class, 'commercials']);
+        Route::patch('commercials/{user}/block', [AdminController::class, 'block']);
+        Route::patch('commercials/{user}/activate', [AdminController::class, 'activate']);
+        Route::get('clients', [AdminController::class, 'clients']);
+        Route::get('devis', [AdminController::class, 'quotes']);
+        Route::get('commandes', [AdminController::class, 'orders']);
+        Route::get('activities', [AdminController::class, 'activities']);
+        Route::get('notifications', [AdminController::class, 'notifications']);
+        Route::get('reports', [AdminController::class, 'reports']);
+        Route::get('profile', [AdminController::class, 'profile']);
+        Route::put('profile', [AdminController::class, 'updateProfile']);
+    });
 
     /*
     |--------------------------------------------------------------------------

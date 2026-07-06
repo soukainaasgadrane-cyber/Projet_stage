@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import DataTable from '../../components/tables/DataTable';
 import { deleteDocument, getDocumentPDF, getDocuments } from '../../services/salesService';
 import { formatCurrency } from '../../utils/currency';
+import { formatDate } from '../../utils/formatDate';
 import { downloadPDF } from '../../utils/pdfExport';
 
 const statusLabels = {
@@ -46,9 +47,13 @@ export default function Devis() {
 
   const handleDelete = async (id) => {
     if (confirm('Supprimer ce devis ?')) {
-      await deleteDocument(id);
-      toast.success('Devis supprime');
-      fetchDocuments();
+      try {
+        await deleteDocument(id);
+        toast.success('Devis supprime');
+        fetchDocuments();
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Erreur suppression devis');
+      }
     }
   };
 
@@ -63,7 +68,7 @@ export default function Devis() {
   const columns = [
     { header: 'Reference', accessor: 'reference' },
     { header: 'Client', accessor: (row) => row.company?.name || '-' },
-    { header: 'Date', accessor: 'document_date' },
+    { header: 'Date', accessor: (row) => formatDate(row.document_date) },
     { header: 'Total', accessor: (row) => formatCurrency(row.total) },
     { header: 'Statut', accessor: (row) => statusLabels[row.status] || row.status || '-' },
     {

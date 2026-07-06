@@ -55,6 +55,10 @@ import FacturesRecurrentes from './pages/ventes/FacturesRecurrentes';
 import Proforma from './pages/ventes/Proforma';
 import RapportsVentes from './pages/ventes/RapportsVentes';
 import DocumentEditor from './pages/ventes/DocumentEditor';
+import AdminCommercials from './pages/admin/AdminCommercials';
+import AdminReadOnlyTable from './pages/admin/AdminReadOnlyTable';
+import AdminReports from './pages/admin/AdminReports';
+import AdminProfile from './pages/admin/AdminProfile';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -74,6 +78,13 @@ function AppRoutes() {
         <Route path="contacts" element={<CRMContacts />} />
         <Route path="ventes" element={<Ventes />} />
         <Route path="reglages" element={<Reglages />} />
+        <Route path="admin/commercials" element={<AdminCommercials />} />
+        <Route path="admin/clients" element={<AdminReadOnlyTable type="clients" />} />
+        <Route path="admin/devis" element={<AdminReadOnlyTable type="devis" />} />
+        <Route path="admin/commandes" element={<AdminReadOnlyTable type="commandes" />} />
+        <Route path="admin/historique" element={<AdminReadOnlyTable type="historique" />} />
+        <Route path="admin/rapports" element={<AdminReports />} />
+        <Route path="admin/profil" element={<AdminProfile />} />
 
         {/* --- ACHATS ROUTES --- */}
         <Route path="achats/demandes-prix" element={<DemandesPrix />} />

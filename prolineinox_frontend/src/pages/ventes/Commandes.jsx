@@ -26,9 +26,10 @@ const deliveryLabels = {
 };
 
 const paymentLabels = {
-  unpaid: 'En attente',
-  advance: 'Avance',
-  paid: 'Payé',
+  unpaid: 'Non paye',
+  advance: 'Avance payee',
+  partial: 'Partiellement paye',
+  paid: 'Paye',
 };
 
 export default function Commandes() {
