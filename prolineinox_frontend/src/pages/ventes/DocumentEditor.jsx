@@ -47,6 +47,63 @@ const convertOptionsByType = {
   receipt_note: [{ value: 'supplier_invoice', label: 'Facture achat', path: '/achats/factures' }],
 };
 
+const numberToFrenchWords = (value) => {
+  const units = ['zero', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize'];
+  const tens = { 20: 'vingt', 30: 'trente', 40: 'quarante', 50: 'cinquante', 60: 'soixante', 80: 'quatre-vingt' };
+
+  const underHundred = (number) => {
+    if (number < 17) return units[number];
+    if (number < 20) return `dix-${units[number - 10]}`;
+    if (number < 70) {
+      const ten = Math.floor(number / 10) * 10;
+      const unit = number % 10;
+      if (!unit) return tens[ten];
+      return `${tens[ten]}${unit === 1 ? ' et ' : '-'}${units[unit]}`;
+    }
+    if (number < 80) return `soixante-${underHundred(number - 60)}`;
+    if (number === 80) return 'quatre-vingts';
+    return `quatre-vingt-${underHundred(number - 80)}`;
+  };
+
+  const underThousand = (number) => {
+    if (number < 100) return underHundred(number);
+    const hundred = Math.floor(number / 100);
+    const rest = number % 100;
+    const prefix = hundred === 1 ? 'cent' : `${units[hundred]} cent`;
+    if (!rest) return hundred > 1 ? `${prefix}s` : prefix;
+    return `${prefix} ${underHundred(rest)}`;
+  };
+
+  const integer = Math.max(0, Math.floor(Number(value) || 0));
+  if (integer < 1000) return underThousand(integer);
+  if (integer < 1000000) {
+    const thousands = Math.floor(integer / 1000);
+    const rest = integer % 1000;
+    const prefix = thousands === 1 ? 'mille' : `${underThousand(thousands)} mille`;
+    return rest ? `${prefix} ${underThousand(rest)}` : prefix;
+  }
+
+  const millions = Math.floor(integer / 1000000);
+  const rest = integer % 1000000;
+  const prefix = `${underThousand(millions)} million${millions > 1 ? 's' : ''}`;
+  if (!rest) return prefix;
+  if (rest < 1000) return `${prefix} ${underThousand(rest)}`;
+
+  const thousands = Math.floor(rest / 1000);
+  const last = rest % 1000;
+  const middle = thousands === 1 ? 'mille' : `${underThousand(thousands)} mille`;
+  return last ? `${prefix} ${middle} ${underThousand(last)}` : `${prefix} ${middle}`;
+};
+
+const amountToFrenchWords = (value) => {
+  const amount = Math.max(0, Number(value) || 0);
+  const dirhams = Math.floor(amount);
+  const centimes = Math.round((amount - dirhams) * 100);
+  const dirhamText = `${numberToFrenchWords(dirhams)} dirham${dirhams > 1 ? 's' : ''}`;
+  const centimeText = centimes > 0 ? ` et ${numberToFrenchWords(centimes)} centime${centimes > 1 ? 's' : ''}` : '';
+  return `${dirhamText}${centimeText} toutes taxes comprises`;
+};
+
 const today = new Date().toISOString().slice(0, 10);
 const addDays = (date, days) => {
   const nextDate = new Date(date);
@@ -158,8 +215,8 @@ export default function DocumentEditor({ documentKind }) {
   const printStyles = {
     page: {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '11px',
-      color: '#333',
+      fontSize: '12px',
+      color: '#111',
       lineHeight: 1.35,
     },
     header: {
@@ -244,7 +301,7 @@ export default function DocumentEditor({ documentKind }) {
       width: '100%',
       borderCollapse: 'collapse',
       tableLayout: 'fixed',
-      fontSize: '10.5px',
+      fontSize: '12px',
     },
     itemHead: {
       padding: '2mm',
@@ -261,6 +318,12 @@ export default function DocumentEditor({ documentKind }) {
       borderBottom: '1px solid #d4d4d4',
       verticalAlign: 'top',
       whiteSpace: 'pre-wrap',
+      lineHeight: 1.45,
+    },
+    itemDetails: {
+      marginTop: '1mm',
+      fontSize: '11px',
+      lineHeight: 1.4,
     },
     summary: {
       display: 'grid',
@@ -274,8 +337,15 @@ export default function DocumentEditor({ documentKind }) {
       borderCollapse: 'collapse',
     },
     totalCell: {
-      padding: '2mm',
+      padding: '1.8mm 2mm',
       border: 0,
+      fontSize: '11.5px',
+    },
+    totalStrongCell: {
+      padding: '1.8mm 2mm',
+      border: 0,
+      fontSize: '11.5px',
+      fontWeight: 600,
     },
   };
 
@@ -1050,7 +1120,7 @@ export default function DocumentEditor({ documentKind }) {
                   <td style={{ ...printStyles.itemCell, textAlign: 'left' }}>{item.reference || ''}</td>
                   <td style={{ ...printStyles.itemCell, textAlign: 'left' }}>
                     <strong>{item.description}</strong>
-                    {item.details ? <div style={{ marginTop: '1mm' }}>{item.details}</div> : null}
+                    {item.details ? <div className="print-item-details" style={printStyles.itemDetails}>{item.details}</div> : null}
                   </td>
                   <td style={{ ...printStyles.itemCell, textAlign: 'right' }}>{item.quantity}</td>
                   <td style={{ ...printStyles.itemCell, textAlign: 'right' }}>{formatMoney(item.unit_price)}</td>
@@ -1064,18 +1134,18 @@ export default function DocumentEditor({ documentKind }) {
         <div className="print-summary" style={printStyles.summary}>
           <div className="print-amount-words">
             <strong style={{ display: 'block', marginBottom: '2mm', fontSize: '10px' }}>ARRETE LE PRESENT {config.label.toUpperCase()} A LA SOMME DE :</strong>
-            <p>{formatMoney(totalTtc)} dirhams toutes taxes comprises</p>
+            <p>{amountToFrenchWords(totalTtc)}</p>
           </div>
 
           <table className="print-totals" style={printStyles.totals}>
             <tbody>
               <tr>
-                <td style={printStyles.totalCell}>TOTAL HT</td>
-                <td style={{ ...printStyles.totalCell, textAlign: 'right' }}>{formatMoney(subtotal)}</td>
+                <td style={printStyles.totalStrongCell}>TOTAL HT</td>
+                <td style={{ ...printStyles.totalStrongCell, textAlign: 'right' }}>{formatMoney(subtotal)}</td>
               </tr>
               <tr>
-                <td style={printStyles.totalCell}>TVA (20%)</td>
-                <td style={{ ...printStyles.totalCell, textAlign: 'right' }}>{formatMoney(tax)}</td>
+                <td style={printStyles.totalStrongCell}>TVA (20%)</td>
+                <td style={{ ...printStyles.totalStrongCell, textAlign: 'right' }}>{formatMoney(tax)}</td>
               </tr>
               <tr>
                 <td style={{ ...printStyles.totalCell, borderTop: '1px solid #aaa', borderBottom: '1px solid #aaa', fontWeight: 600 }}>Montant NET TTC (MAD)</td>
@@ -1095,12 +1165,13 @@ export default function DocumentEditor({ documentKind }) {
           <p>{printNote}</p>
         </div>
 
-        <div className="print-footer">
-          S.A.R.L A.U au capital de 100 000,00 Dhs 26 AVENUE MERS SULTANE TG1 APPT N°3
+        <div className="print-footer-spacer" />
 
+        <div className="print-footer">
+          S.A.R.L A.U au capital de 100 000,00 Dhs 26 AVENUE MERS SULTANE TG1 APPT N&deg;3<br />
           Addresse: Rue 7 N 5 ETG 2 Appt N 4 SAADA SIDI BERNOUSSI CASABLANCA;
           Email: contact@inoxproline.ma<br />
-          RC 370277 ***** TP : 31621181 ***** LF: 20745460 ***** ICE 001877012000072
+          R.C.: 724691 ***** T.P: 34109698 ***** I.F.: 72053253 ***** ICE: 003890444000088
         </div>
       </section>
 

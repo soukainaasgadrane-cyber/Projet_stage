@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Document {{ $document->reference ?? $document->id }}</title>
     <style>
-        @page { margin: 28px 28px 118px 28px; }
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #333; }
+        @page { margin: 28px 28px 92px 28px; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 13px; color: #111; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #999; padding: 6px; }
         th { background: #f2f2f2; font-weight: bold; text-align: center; }
@@ -18,30 +18,32 @@
         .logo-sub { display: block; margin-left: 58px; margin-top: -14px; font-size: 12px; font-weight: bold; letter-spacing: 8px; color: #3f4f63; }
         .logo-tagline { display: block; margin-top: 10px; font-size: 5px; font-weight: bold; letter-spacing: 1px; color: #4d5968; }
         .document-title { margin: 0 0 18px 0; font-size: 15px; font-weight: normal; letter-spacing: 0; text-transform: uppercase; }
-        .meta-table { width: 270px; margin-bottom: 28px; font-size: 11px; }
+        .meta-table { width: 270px; margin-bottom: 28px; font-size: 11.5px; }
         .meta-table th, .meta-table td { border: 0; padding: 4px 0; text-align: left; background: transparent; }
         .meta-table th { width: 92px; color: #666; font-weight: normal; }
         .meta-table .linked-row th, .meta-table .linked-row td { padding-top: 8px; }
-        .client-box { border: 1px solid #ddd; padding: 10px 12px; min-height: 82px; margin-top: 74px; font-size: 11px; }
-        .muted { color: #666; font-size: 11px; line-height: 1.45; }
-        .items-table { table-layout: fixed; font-size: 11px; margin-top: 2px; }
-        .items-table th { border-color: #444; background: #2c2c2c; color: #fff; padding: 7px 8px; font-size: 10px; text-align: left; text-transform: uppercase; }
+        .client-box { border: 1px solid #ddd; padding: 10px 12px; min-height: 82px; margin-top: 74px; font-size: 11.5px; }
+        .muted { color: #444; font-size: 11px; line-height: 1.45; }
+        .items-table { table-layout: fixed; font-size: 12.5px; margin-top: 2px; }
+        .items-table th { border-color: #444; background: #2c2c2c; color: #fff; padding: 7px 8px; font-size: 11px; text-align: left; text-transform: uppercase; }
         .items-table th.num, .items-table td.num { text-align: right; }
-        .items-table td { border-left: 0; border-right: 0; border-top: 0; border-bottom: 1px solid #ccc; height: 28px; padding: 5px 8px; vertical-align: top; }
-        .amount-words { width: 48%; float: left; margin-top: 30px; line-height: 1.45; font-size: 10px; }
+        .items-table td { border-left: 0; border-right: 0; border-top: 0; border-bottom: 1px solid #ccc; height: 28px; padding: 5px 8px; vertical-align: top; line-height: 1.45; }
+        .item-details { font-size: 11.5px; line-height: 1.4; }
+        .amount-words { width: 48%; float: left; margin-top: 30px; line-height: 1.45; font-size: 11.5px; }
         .amount-words .title { font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
-        .amount-table { width: 300px; float: right; margin-top: 12px; }
-        .amount-table td { border: 0; background: transparent; padding: 7px 4px; font-weight: normal; }
-        .amount-table .net td { border-top: 1px solid #aaa; border-bottom: 1px solid #aaa; font-weight: bold; }
-        .conditions { clear: both; padding-top: 34px; width: 58%; font-size: 10px; line-height: 1.45; }
-        .conditions .title, .notes-box .title, .payments-box .title { font-weight: bold; text-transform: uppercase; margin-bottom: 14px; }
-        .payments-box { clear: both; padding-top: 28px; width: 70%; font-size: 10px; line-height: 1.45; }
+        .amount-table { width: 300px; float: right; margin-top: 12px; font-size: 11.5px; }
+        .amount-table td { border: 0; background: transparent; padding: 6px 4px; font-weight: 600; }
+        .amount-table .net td { border-top: 1px solid #aaa; border-bottom: 1px solid #aaa; font-weight: 600; }
+        .conditions { clear: both; padding-top: 20px; width: 58%; font-size: 10px; line-height: 1.45; }
+        .conditions .title, .notes-box .title, .payments-box .title { font-weight: bold; text-transform: uppercase; margin-bottom: 8px; }
+        .payments-box { clear: both; padding-top: 22px; width: 70%; font-size: 10px; line-height: 1.45; }
         .payments-box ul { margin: 0 0 0 18px; padding: 0; }
         .payments-box li { margin-bottom: 6px; }
-        .notes-box { width: 58%; margin-top: 28px; margin-bottom: 54px; font-size: 10px; line-height: 1.45; }
-        .footer-spacer { clear: both; height: 62px; }
-        .footer { position: fixed; bottom: 24px; left: 0; right: 0; text-align: center; font-size: 9px; color: #555; line-height: 1.35; }
-        .page-number { position: fixed; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 10px; color: #555; }
+        .notes-box { width: 58%; margin-top: 18px; margin-bottom: 18px; font-size: 11px; line-height: 1.45; }
+        .notes-box .title { font-size: 10px; }
+        .footer-spacer { clear: both; height: 42px; }
+        .footer { position: fixed; bottom: 18px; left: 0; right: 0; text-align: center; font-size: 9px; font-weight: bold; color: #000; line-height: 1.4; }
+        .page-number { position: fixed; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 10px; color: #222; }
     </style>
 </head>
 <body>
@@ -262,7 +264,7 @@
                     <td>
                         <strong>{{ $item->description ?? $item->name ?? '' }}</strong>
                         @if(!empty($item->details))
-                            <br><span class="muted">{!! nl2br(e($item->details)) !!}</span>
+                            <br><span class="muted item-details">{!! nl2br(e($item->details)) !!}</span>
                         @endif
                     </td>
                     <td class="num">{{ $item->quantity ?? $item->qty ?? '' }}</td>
@@ -327,14 +329,9 @@
     <div class="footer-spacer"></div>
 
     <div class="footer">
-          S.A.R.L A.U au capital de 100 000,00 Dhs 26 AVENUE MERS SULTANE TG1 APPT N°3<br />
-
-         Addresse: Rue 7 N 5 ETG 2 Appt N 4 SAADA SIDI BERNOUSSI CASABLANCA;
-         Email: contact@inoxproline.ma<br />
-
-         R.C.: 724691*****T.P: 34109698*****I.F.: 72053253*****
-
-         ICE: 003890444000088
+        S.A.R.L A.U au capital de 100 000,00 Dhs 26 AVENUE MERS SULTANE TG1 APPT N&deg;3<br>
+        Addresse: Rue 7 N 5 ETG 2 Appt N 4 SAADA SIDI BERNOUSSI CASABLANCA; Email: contact@inoxproline.ma<br>
+        R.C.: 724691 ***** T.P: 34109698 ***** I.F.: 72053253 ***** ICE: 003890444000088
     </div>
     <div class="page-number">1 / 1</div>
 </body>

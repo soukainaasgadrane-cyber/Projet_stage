@@ -32,6 +32,11 @@
 }
 
 @media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .no-print,
   button,
   aside,
@@ -67,10 +72,11 @@
     inset: 0;
     width: 100%;
     min-height: 100vh;
-    padding: 18mm 12mm 22mm;
-    color: #333;
+    padding: 18mm 12mm 30mm;
+    box-sizing: border-box;
+    color: #111;
     font-family: Arial, sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.35;
   }
 
@@ -164,7 +170,7 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    font-size: 10.5px;
+    font-size: 12px;
   }
 
   .print-items th {
@@ -192,6 +198,14 @@
     border-bottom: 1px solid #d4d4d4;
     vertical-align: top;
     white-space: pre-wrap;
+    line-height: 1.45;
+  }
+
+  .print-item-details {
+    display: block;
+    margin-top: 1mm;
+    font-size: 11px;
+    line-height: 1.4;
   }
 
   .print-summary {
@@ -218,8 +232,14 @@
   }
 
   .print-totals td {
-    padding: 2mm;
+    padding: 1.8mm 2mm;
     border: 0;
+    font-size: 11.5px;
+  }
+
+  .print-totals tr:nth-child(1) td,
+  .print-totals tr:nth-child(2) td {
+    font-weight: 600;
   }
 
   .print-totals td:last-child {
@@ -234,15 +254,20 @@
 
   .print-conditions,
   .print-notes {
-    margin-top: 10mm;
+    margin-top: 5mm;
     width: 58%;
     font-size: 10px;
+  }
+
+  .print-footer-spacer {
+    clear: both;
+    height: 18mm;
   }
 
   .print-conditions strong,
   .print-notes strong {
     display: block;
-    margin-bottom: 6mm;
+    margin-bottom: 3mm;
   }
 
   .print-conditions p,
@@ -250,13 +275,19 @@
     margin: 0;
   }
 
+  .print-notes p {
+    font-size: 11px;
+  }
+
   .print-footer {
     position: fixed;
     right: 12mm;
-    bottom: 9mm;
+    bottom: 8mm;
     left: 12mm;
     text-align: center;
-    font-size: 9px;
-    color: #555;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #000;
   }
 }
