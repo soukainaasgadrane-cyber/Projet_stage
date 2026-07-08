@@ -34,13 +34,13 @@
         .amount-table { width: 300px; float: right; margin-top: 12px; font-size: 11.5px; }
         .amount-table td { border: 0; background: transparent; padding: 6px 4px; font-weight: 600; }
         .amount-table .net td { border-top: 1px solid #aaa; border-bottom: 1px solid #aaa; font-weight: 600; }
-        .conditions { clear: both; padding-top: 20px; width: 58%; font-size: 10px; line-height: 1.45; }
+        .conditions { clear: both; padding-top: 20px; width: 58%; font-size: 11.5px; line-height: 1.45; }
         .conditions .title, .notes-box .title, .payments-box .title { font-weight: bold; text-transform: uppercase; margin-bottom: 8px; }
         .payments-box { clear: both; padding-top: 22px; width: 70%; font-size: 10px; line-height: 1.45; }
         .payments-box ul { margin: 0 0 0 18px; padding: 0; }
         .payments-box li { margin-bottom: 6px; }
-        .notes-box { width: 58%; margin-top: 18px; margin-bottom: 18px; font-size: 11px; line-height: 1.45; }
-        .notes-box .title { font-size: 10px; }
+        .notes-box { width: 58%; margin-top: 18px; margin-bottom: 18px; font-size: 12px; line-height: 1.45; }
+        .notes-box .title { font-size: 11.5px; }
         .footer-spacer { clear: both; height: 42px; }
         .footer { position: fixed; bottom: 18px; left: 0; right: 0; text-align: center; font-size: 9px; font-weight: bold; color: #000; line-height: 1.4; }
         .page-number { position: fixed; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 10px; color: #222; }
