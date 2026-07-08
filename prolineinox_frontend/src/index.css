@@ -261,7 +261,7 @@
 
   .print-footer-spacer {
     clear: both;
-    height: 18mm;
+    height: 24mm;
   }
 
   .print-conditions strong,
@@ -282,7 +282,7 @@
   .print-footer {
     position: fixed;
     right: 12mm;
-    bottom: 8mm;
+    bottom: 2mm;
     left: 12mm;
     text-align: center;
     font-size: 8px;

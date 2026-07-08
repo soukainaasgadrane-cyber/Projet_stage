@@ -41,8 +41,8 @@
         .payments-box li { margin-bottom: 6px; }
         .notes-box { width: 58%; margin-top: 18px; margin-bottom: 18px; font-size: 12px; line-height: 1.45; }
         .notes-box .title { font-size: 11.5px; }
-        .footer-spacer { clear: both; height: 42px; }
-        .footer { position: fixed; bottom: 18px; left: 0; right: 0; text-align: center; font-size: 9px; font-weight: bold; color: #000; line-height: 1.4; }
+        .footer-spacer { clear: both; height: 58px; }
+        .footer { position: fixed; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 9px; font-weight: bold; color: #000; line-height: 1.4; }
         .page-number { position: fixed; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 10px; color: #222; }
     </style>
 </head>
