@@ -29,6 +29,19 @@ class PdfService
         if (class_exists('\Barryvdh\DomPDF\Facade\Pdf')) {
             try {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.document', $data);
+                $pdf->setPaper('A4', 'portrait');
+                $dompdf = $pdf->getDomPDF();
+                $canvas = $dompdf->getCanvas();
+                $pageWidth = $canvas->get_width();
+                $pageHeight = $canvas->get_height();
+                $canvas->page_text(
+                    $pageWidth / 2 - 24,
+                    $pageHeight - 14,
+                    '{PAGE_NUM} / {PAGE_COUNT}',
+                    null,
+                    9,
+                    [0, 0, 0]
+                );
                 return $pdf->stream('sale_'.$document->id.'.pdf')->withHeaders([
                     'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
                     'Pragma' => 'no-cache',

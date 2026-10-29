@@ -98,6 +98,8 @@ const adminNavigation = [
   { name: 'Clients', href: '/admin/clients', icon: BuildingOfficeIcon },
   { name: 'Devis', href: '/admin/devis', icon: DocumentTextIcon },
   { name: 'Commandes', href: '/admin/commandes', icon: ShoppingCartIcon },
+  { name: 'Factures', href: '/admin/factures', icon: DocumentTextIcon },
+  { name: 'Paiements', href: '/admin/paiements', icon: BanknotesIcon },
   { name: 'Historique', href: '/admin/historique', icon: ClipboardDocumentListIcon },
   { name: 'Rapports', href: '/admin/rapports', icon: ChartBarIcon },
   { name: 'Profil', href: '/admin/profil', icon: Cog6ToothIcon },

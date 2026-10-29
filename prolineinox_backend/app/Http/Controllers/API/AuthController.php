@@ -28,9 +28,11 @@ class AuthController extends Controller
             ]);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active || ($user->account_status ?? 'active') !== 'active') {
             return response()->json([
-                'message' => "Votre compte a ete bloque par l'administrateur.",
+                'message' => ($user->account_status ?? 'blocked') === 'suspended'
+                    ? 'Votre compte est suspendu par l’administrateur.'
+                    : "Votre compte a ete bloque par l'administrateur.",
             ], 403);
         }
 

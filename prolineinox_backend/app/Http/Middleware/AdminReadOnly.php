@@ -9,6 +9,13 @@ class AdminReadOnly
     public function handle($request, Closure $next)
     {
         $user = $request->user();
+        if ($user && (! $user->is_active || ($user->account_status ?? 'active') !== 'active')) {
+            return response()->json([
+                'message' => $user->account_status === 'suspended'
+                    ? 'Votre compte est suspendu.'
+                    : 'Votre compte est bloqué.',
+            ], 403);
+        }
         $isAdmin = $user && ($user->role === 'admin' || (method_exists($user, 'hasRole') && $user->hasRole('admin')));
         $allowedAdminWrite = $request->is('api/admin/*') || $request->is('api/logout');
 

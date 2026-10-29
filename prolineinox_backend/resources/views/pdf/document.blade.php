@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Document {{ $document->reference ?? $document->id }}</title>
     <style>
-        @page { margin: 28px 28px 92px 28px; }
-        body { font-family: DejaVu Sans, sans-serif; font-size: 13px; color: #111; }
+        @page { margin: 24px 28px 160px 28px; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #111; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #999; padding: 6px; }
         th { background: #f2f2f2; font-weight: bold; text-align: center; }
@@ -28,22 +28,25 @@
         .items-table th { border-color: #444; background: #2c2c2c; color: #fff; padding: 7px 8px; font-size: 11px; text-align: left; text-transform: uppercase; }
         .items-table th.num, .items-table td.num { text-align: right; }
         .items-table td { border-left: 0; border-right: 0; border-top: 0; border-bottom: 1px solid #ccc; height: 28px; padding: 5px 8px; vertical-align: top; line-height: 1.45; }
+        .items-table tr { page-break-inside: avoid; }
         .item-details { font-size: 11.5px; line-height: 1.4; }
-        .amount-words { width: 48%; float: left; margin-top: 30px; line-height: 1.45; font-size: 11.5px; }
+        .item-content { page-break-inside: avoid; }
+        .amount-section { width: 100%; page-break-inside: avoid; margin-top: 18px; }
+        .amount-section > tbody > tr > td { border: 0; padding: 0; vertical-align: top; }
+        .amount-words { width: 48%; line-height: 1.4; font-size: 11px; }
         .amount-words .title { font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
-        .amount-table { width: 300px; float: right; margin-top: 12px; font-size: 11.5px; }
+        .amount-table { width: 100%; margin: 0 0 0 auto; font-size: 11px; page-break-inside: avoid; }
+        .amount-table tr { page-break-inside: avoid; }
         .amount-table td { border: 0; background: transparent; padding: 6px 4px; font-weight: 600; }
         .amount-table .net td { border-top: 1px solid #aaa; border-bottom: 1px solid #aaa; font-weight: 600; }
-        .conditions { clear: both; padding-top: 20px; width: 58%; font-size: 11.5px; line-height: 1.45; }
+        .conditions { clear: both; padding-top: 12px; width: 58%; font-size: 11px; line-height: 1.4; page-break-inside: avoid; }
         .conditions .title, .notes-box .title, .payments-box .title { font-weight: bold; text-transform: uppercase; margin-bottom: 8px; }
         .payments-box { clear: both; padding-top: 22px; width: 70%; font-size: 10px; line-height: 1.45; }
         .payments-box ul { margin: 0 0 0 18px; padding: 0; }
         .payments-box li { margin-bottom: 6px; }
-        .notes-box { width: 58%; margin-top: 18px; margin-bottom: 18px; font-size: 12px; line-height: 1.45; }
-        .notes-box .title { font-size: 11.5px; }
-        .footer-spacer { clear: both; height: 58px; }
-        .footer { position: fixed; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 9px; font-weight: bold; color: #000; line-height: 1.4; }
-        .page-number { position: fixed; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 10px; color: #222; }
+        .notes-box { width: 58%; margin-top: 12px; margin-bottom: 8px; font-size: 11px; line-height: 1.4; page-break-inside: avoid; }
+        .notes-box .title { font-size: 11px; }
+        .footer { position: fixed; bottom: -100px; left: 0; right: 0; text-align: center; font-size: 9px; font-weight: bold; color: #000; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -262,10 +265,12 @@
                         <td>{{ $item->reference ?? $item->article->code ?? '' }}</td>
                     @endif
                     <td>
-                        <strong>{{ $item->description ?? $item->name ?? '' }}</strong>
-                        @if(!empty($item->details))
-                            <br><span class="muted item-details">{!! nl2br(e($item->details)) !!}</span>
-                        @endif
+                        <div class="item-content">
+                            <strong>{{ $item->description ?? $item->name ?? '' }}</strong>
+                            @if(!empty($item->details))
+                                <br><span class="muted item-details">{!! nl2br(e($item->details)) !!}</span>
+                            @endif
+                        </div>
                     </td>
                     <td class="num">{{ $item->quantity ?? $item->qty ?? '' }}</td>
                     <td class="num">{{ number_format((float) ($item->unit_price ?? $item->price ?? 0), 2) }}</td>
@@ -279,24 +284,33 @@
         </tbody>
     </table>
 
-    <div class="amount-words">
-        <div class="title">Arrete le present {{ strtolower($documentTitle) }} a la somme de :</div>
-        <div>{{ $amountWords ?? number_format($document->total ?? 0, 2) . ' dirhams toutes taxes comprises' }}</div>
-    </div>
-
-    <table class="amount-table">
-        <tr>
-            <td>Total HT</td>
-            <td style="text-align:right">{{ number_format($document->subtotal ?? 0, 2) }}</td>
-        </tr>
-        <tr>
-            <td>TVA (20%)</td>
-            <td style="text-align:right">{{ number_format($document->tax ?? 0, 2) }}</td>
-        </tr>
-        <tr class="net">
-            <td>Montant NET TTC (MAD)</td>
-            <td style="text-align:right">{{ number_format($document->total ?? 0, 2) }}</td>
-        </tr>
+    <table class="amount-section">
+        <tbody>
+            <tr>
+                <td class="amount-words">
+                    <div class="title">Arrete le present {{ strtolower($documentTitle) }} a la somme de :</div>
+                    <div>{{ $amountWords ?? number_format($document->total ?? 0, 2) . ' dirhams toutes taxes comprises' }}</div>
+                </td>
+                <td style="width:52%">
+                    <table class="amount-table">
+                        <tbody>
+                            <tr>
+                                <td>Total HT</td>
+                                <td style="text-align:right">{{ number_format($document->subtotal ?? 0, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td>TVA (20%)</td>
+                                <td style="text-align:right">{{ number_format($document->tax ?? 0, 2) }}</td>
+                            </tr>
+                            <tr class="net">
+                                <td>Montant NET TTC (MAD)</td>
+                                <td style="text-align:right">{{ number_format($document->total ?? 0, 2) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
     </table>
 
     @if($isInvoice && $payments->count())
@@ -326,13 +340,10 @@
         <div>{!! nl2br(e($note)) !!}</div>
     </div>
 
-    <div class="footer-spacer"></div>
-
     <div class="footer">
         S.A.R.L A.U au capital de 100 000,00 Dhs 26 AVENUE MERS SULTANE TG1 APPT N&deg;3<br>
         Addresse: Rue 7 N 5 ETG 2 Appt N 4 SAADA SIDI BERNOUSSI CASABLANCA; Email: contact@inoxproline.ma<br>
         R.C.: 724691 ***** T.P: 34109698 ***** I.F.: 72053253 ***** ICE: 003890444000088
     </div>
-    <div class="page-number">1 / 1</div>
 </body>
 </html>

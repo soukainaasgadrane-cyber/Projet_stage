@@ -23,6 +23,8 @@ class User extends Authenticatable
         'role',
         'is_active',
         'last_login_at',
+        'account_status',
+        'account_status_reason',
     ];
 
     protected $casts = [
@@ -44,6 +46,11 @@ class User extends Authenticatable
     public function roles()
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'created_by');
     }
 
     /*

@@ -56,6 +56,7 @@ import Proforma from './pages/ventes/Proforma';
 import RapportsVentes from './pages/ventes/RapportsVentes';
 import DocumentEditor from './pages/ventes/DocumentEditor';
 import AdminCommercials from './pages/admin/AdminCommercials';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminReadOnlyTable from './pages/admin/AdminReadOnlyTable';
 import AdminReports from './pages/admin/AdminReports';
 import AdminProfile from './pages/admin/AdminProfile';
@@ -66,25 +67,35 @@ const ProtectedRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" />;
 };
 
+const AdminOnlyRoute = ({ children }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin' || user?.roles?.some?.((role) => role.name === 'admin');
+  return isAdmin ? children : <Navigate to="/" replace />;
+};
+
 function AppRoutes() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin' || user?.roles?.some?.((role) => role.name === 'admin');
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       
       {/* Routes protégées avec DashboardLayout */}
       <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-        <Route index element={<Dashboard />} />
+        <Route index element={isAdmin ? <AdminDashboard /> : <Dashboard />} />
         <Route path="comptes" element={<Comptes />} />
         <Route path="contacts" element={<CRMContacts />} />
         <Route path="ventes" element={<Ventes />} />
         <Route path="reglages" element={<Reglages />} />
-        <Route path="admin/commercials" element={<AdminCommercials />} />
-        <Route path="admin/clients" element={<AdminReadOnlyTable type="clients" />} />
-        <Route path="admin/devis" element={<AdminReadOnlyTable type="devis" />} />
-        <Route path="admin/commandes" element={<AdminReadOnlyTable type="commandes" />} />
-        <Route path="admin/historique" element={<AdminReadOnlyTable type="historique" />} />
-        <Route path="admin/rapports" element={<AdminReports />} />
-        <Route path="admin/profil" element={<AdminProfile />} />
+        <Route path="admin/commercials" element={<AdminOnlyRoute><AdminCommercials /></AdminOnlyRoute>} />
+        <Route path="admin/clients" element={<AdminOnlyRoute><AdminReadOnlyTable type="clients" /></AdminOnlyRoute>} />
+        <Route path="admin/devis" element={<AdminOnlyRoute><AdminReadOnlyTable type="devis" /></AdminOnlyRoute>} />
+        <Route path="admin/commandes" element={<AdminOnlyRoute><AdminReadOnlyTable type="commandes" /></AdminOnlyRoute>} />
+        <Route path="admin/factures" element={<AdminOnlyRoute><AdminReadOnlyTable type="factures" /></AdminOnlyRoute>} />
+        <Route path="admin/paiements" element={<AdminOnlyRoute><AdminReadOnlyTable type="paiements" /></AdminOnlyRoute>} />
+        <Route path="admin/historique" element={<AdminOnlyRoute><AdminReadOnlyTable type="historique" /></AdminOnlyRoute>} />
+        <Route path="admin/rapports" element={<AdminOnlyRoute><AdminReports /></AdminOnlyRoute>} />
+        <Route path="admin/profil" element={<AdminOnlyRoute><AdminProfile /></AdminOnlyRoute>} />
 
         {/* --- ACHATS ROUTES --- */}
         <Route path="achats/demandes-prix" element={<DemandesPrix />} />
